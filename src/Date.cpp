@@ -1,7 +1,20 @@
 #include "Date.h"
+
 #include <stdexcept>
 
-Date::Date(const int &year, const int &month, const int &day, const int &hour, const int &minute, const int &second) {
+Date::Date() : date() {
+    date.tm_year=0;
+    date.tm_mon=0;
+    date.tm_mday=0;
+    date.tm_hour=0;
+    date.tm_min=0;
+    date.tm_sec=0;
+}
+
+Date::Date(tm time) : date(time){
+}
+
+Date::Date(const int &year, const int &month, const int &day, const int &hour, const int &minute, const int &second) : date() {
     if(year < 1970)
         throw std::invalid_argument("Invalid year passed to Date constructor.");
 
@@ -29,51 +42,51 @@ Date::Date(const int &year, const int &month, const int &day, const int &hour, c
     if(month == 2 && year%4 == 0 && day > 29)
         throw std::invalid_argument("Invalid date passed to Date constructor. February has only 29 days in " + std::to_string(year));
 
-    this->year=year;
-    this->month=month;
-    this->day=day;
-    this->hour=hour;
-    this->minute=minute;
-    this->second=second;
+    date.tm_year=year-1900;
+    date.tm_mon=month-1;
+    date.tm_mday=day;
+    date.tm_hour=hour;
+    date.tm_min=minute;
+    date.tm_sec=second;
 }
 
 int Date::getYear() const {
-    return year;
+    return 1900 + date.tm_year;
 }
 
 int Date::getMonth() const {
-    return month;
+    return 1 + date.tm_mon;
 }
 
 int Date::getDay() const {
-    return day;
+    return date.tm_mday;
 }
 
 int Date::getHour() const {
-    return hour;
+    return date.tm_hour;
 }
 
 int Date::getMinute() const {
-    return minute;
+    return date.tm_min;
 }
 
 int Date::getSecond() const {
-    return second;
+    return date.tm_sec;
 }
 
 std::string Date::getFormatted() const {
     using namespace std;
     string formattedDate;
     string monthString, dayString, hourString, minuteString, secondString;
-    monthString = addZeroIfNeeded(month);
-    dayString = addZeroIfNeeded(day);
-    hourString = addZeroIfNeeded(hour);
-    minuteString = addZeroIfNeeded(minute);
-    secondString = addZeroIfNeeded(second);
+    monthString = addZeroIfNeeded(getMonth());
+    dayString = addZeroIfNeeded(getDay());
+    hourString = addZeroIfNeeded(getHour());
+    minuteString = addZeroIfNeeded(getMinute());
+    secondString = addZeroIfNeeded(getSecond());
     // HH:MM DD/MM/YYYY
     formattedDate = hourString + ":" + minuteString + ":" + secondString;
     formattedDate += ", ";
-    formattedDate += dayString + "/" + monthString + "/" + to_string(year);
+    formattedDate += dayString + "/" + monthString + "/" + to_string(getYear());
     return formattedDate;
 }
 
