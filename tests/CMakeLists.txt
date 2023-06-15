@@ -5,6 +5,6 @@ project(${PROJECT_NAME})
 
 find_package(GTest REQUIRED)
 
-set(SOURCE_FILES runAllTests.cpp)
+set(SOURCE_FILES runAllTests.cpp DateTest.cpp)
 add_executable(runAllTests ${SOURCE_FILES})
 target_link_libraries(runAllTests ${GTEST_BOTH_LIBRARIES} core)
