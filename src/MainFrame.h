@@ -15,12 +15,7 @@ enum eventID {
     NEWBUTTON,
     RENAMEBUTTON,
     NAMEFIELD,
-    YEARSC,
-    WEEKSC,
-    DAYSC,
-    HOURSC,
-    MINUTESC,
-    SECONDSC
+    SPINCTRLID,
 };
 
 class MainFrame : public wxFrame {
@@ -29,6 +24,8 @@ public:
 
 private:
     void setupUI();
+
+    void setupEventHandling();
 
     void loadTimers();
 
@@ -59,6 +56,8 @@ private:
     Timer *currentTimer{};
     wxPanel *mainPanel;
     wxStaticText *timerListStaticText{};
+    wxStaticText *startDateText{};
+    wxStaticText *stopDateText{};
     wxListBox *timerListBox{};
     wxArrayString savedTimers;
     wxStaticText *remainingTimeStaticText{};
@@ -74,9 +73,7 @@ private:
     wxSpinCtrl *secondsSpinCtrl{};
     wxTextCtrl* timerNameField{};
 
-wxDECLARE_EVENT_TABLE();
-
-    void setupEventHandling();
+    wxDECLARE_EVENT_TABLE();
 };
 
 #endif //TIMER_MAINFRAME_H
