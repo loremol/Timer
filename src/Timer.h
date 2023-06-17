@@ -18,6 +18,10 @@ public:
 
     [[nodiscard]] const std::string &getName() const;
 
+    void setName(const std::string &s);
+
+    void setDuration(int duration);
+
     [[nodiscard]] int getDuration() const;
 
     [[nodiscard]] int getRemaining() const;

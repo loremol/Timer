@@ -76,3 +76,11 @@ std::string Timer::getRemainingString(const std::string &format) const {
 
     return s;
 }
+
+void Timer::setName(const std::string &s) {
+    name = s;
+}
+
+void Timer::setDuration(int duration) {
+    Timer::duration = duration;
+}
