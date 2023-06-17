@@ -27,13 +27,12 @@ public:
 
     [[nodiscard]] std::string getFormatted() const;
 
+    [[nodiscard]] static std::string addZeroIfNeeded(const int &value);
+
 private:
     tm date;
     std::string monthStrings[12] = {"January", "February", "March", "April", "May", "June", "July", "August",
                                     "September", "October", "November", "December"};
-
-    [[nodiscard]] static std::string addZeroIfNeeded(const int &value);
-
 };
 
 

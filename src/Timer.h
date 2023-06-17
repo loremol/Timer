@@ -22,6 +22,8 @@ public:
 
     [[nodiscard]] int getRemaining() const;
 
+    [[nodiscard]] std::string getRemainingString(const std::string &format) const;
+
     [[nodiscard]] bool isRunning() const;
 
     [[nodiscard]] bool getState() const;

@@ -1,5 +1,6 @@
 #include "Timer.h"
 
+#include <cmath>
 #include <utility>
 #include <ctime>
 #include <iostream>
@@ -57,4 +58,21 @@ bool Timer::isRunning() const {
 
 bool Timer::getState() const {
     return state;
+}
+
+std::string Timer::getRemainingString(const std::string &format) const {
+    std::string s;
+    if(format == "HH:MM:SS") {
+        int hours = std::floor(static_cast<float>(remaining)/3600);
+        int minutes = std::floor((remaining - (hours*3600)) / 60);
+        int seconds = remaining - (hours * 3600) - (minutes * 60);
+
+        s += Date::addZeroIfNeeded(hours) + ":";
+        s += Date::addZeroIfNeeded(minutes) + ":";
+        s += Date::addZeroIfNeeded(seconds);
+    } else {
+        s = "Format not supported.";
+    }
+
+    return s;
 }

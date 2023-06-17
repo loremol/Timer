@@ -23,7 +23,7 @@ void MainFrame::initUI() {
 }
 
 void MainFrame::loadTimers() {
-    auto *t = new Timer("Timer1", 3);
+    auto *t = new Timer("Timer1", 3665);
     auto *t2 = new Timer("Timer2", 5);
     timers.push_back(t);
     timers.push_back(t2);
@@ -121,7 +121,7 @@ void MainFrame::OnStop(wxCommandEvent &event) {
 }
 
 void MainFrame::update() {
-    remainingTimeStaticText->SetLabel(wxString(std::to_string(currentTimer->getRemaining())));
+    remainingTimeStaticText->SetLabel(wxString(currentTimer->getRemainingString("HH:MM:SS")));
     if (currentTimer->getState() == RUNNING) {
         startButton->Enable(false);
         stopButton->Enable(true);
