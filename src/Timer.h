@@ -1,31 +1,43 @@
 #ifndef TIMER_TIMER_H
 #define TIMER_TIMER_H
+
 #include "Date.h"
 
 #include <string>
+#include <atomic>
+#include <functional>
+
+enum State {
+    STOPPED,
+    RUNNING
+};
 
 class Timer {
 public:
-    Timer(std::string name, int duration);
+    explicit Timer(std::string name = "", int duration = 0);
 
     [[nodiscard]] const std::string &getName() const;
+
     [[nodiscard]] int getDuration() const;
+
     [[nodiscard]] int getRemaining() const;
-    [[nodiscard]] Date getStartDate() const;
-    [[nodiscard]] Date getEndDate() const;
+
     [[nodiscard]] bool isRunning() const;
 
-    void start();
-    void stop();
+    [[nodiscard]] bool getState() const;
+
+    void start(const std::function<void()> &updateView);
+
+    void stop(const std::function<void()> &updateView);
+
 private:
+    void calcStartEndDates();
+
     std::string name;
     int duration, remaining; // in seconds
     Date startDate, endDate;
     bool state;
-    enum State {
-        STOPPED,
-        RUNNING
-    };
+
 };
 
 
