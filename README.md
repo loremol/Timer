@@ -4,4 +4,4 @@ It is capable of running multiple timers at the same time and show you when each
 
 This is a screenshot of a timer running in the application.
 
-![Schermata del 2023-06-17 18-24-40](https://github.com/loremol/Timer/assets/37514923/877f4e20-6e28-4f6d-8a28-1e072dbc025c)
+![Schermata del 2023-06-17 18-40-26](https://github.com/loremol/Timer/assets/37514923/7c736c0d-3918-42e2-8f93-3a4eb09a1717)
