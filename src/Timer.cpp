@@ -86,3 +86,11 @@ void Timer::setDuration(int duration) {
     if(state==STOPPED)
         remaining = duration;
 }
+
+Date &Timer::getStartDate() {
+    return startDate;
+}
+
+Date &Timer::getEndDate() {
+    return endDate;
+}

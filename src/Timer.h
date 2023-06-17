@@ -32,6 +32,10 @@ public:
 
     [[nodiscard]] bool getState() const;
 
+    [[nodiscard]] Date &getStartDate();
+
+    [[nodiscard]] Date &getEndDate();
+
     void start(const std::function<void()> &updateView);
 
     void stop(const std::function<void()> &updateView);
