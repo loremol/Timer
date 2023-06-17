@@ -83,4 +83,6 @@ void Timer::setName(const std::string &s) {
 
 void Timer::setDuration(int duration) {
     Timer::duration = duration;
+    if(state==STOPPED)
+        remaining = duration;
 }
