@@ -9,8 +9,18 @@
 #include "App.h"
 
 enum eventID {
+    LISTBOX,
     STARTBUTTON,
-    STOPBUTTON
+    STOPBUTTON,
+    NEWBUTTON,
+    RENAMEBUTTON,
+    NAMEFIELD,
+    YEARSC,
+    WEEKSC,
+    DAYSC,
+    HOURSC,
+    MINUTESC,
+    SECONDSC
 };
 
 class MainFrame : public wxFrame {
@@ -34,6 +44,16 @@ private:
 
     void OnStop(wxCommandEvent &event);
 
+    void OnNew(wxCommandEvent& event);
+
+    void OnRename(wxCommandEvent& event);
+
+    void OnSelectCurrentTimer(wxCommandEvent& event);
+
+    void updateSpinCtrlValues();
+
+    void updateCurrentTimerDuration(wxSpinEvent &event);
+
     std::vector<Timer *> timers;
     std::thread thread;
     Timer *currentTimer{};
@@ -44,6 +64,15 @@ private:
     wxStaticText *remainingTimeStaticText{};
     wxButton *startButton{};
     wxButton *stopButton{};
+    wxButton *newButton{};
+    wxButton *renameButton{};
+    wxSpinCtrl *yearsSpinCtrl{};
+    wxSpinCtrl *weeksSpinCtrl{};
+    wxSpinCtrl *daysSpinCtrl{};
+    wxSpinCtrl *hoursSpinCtrl{};
+    wxSpinCtrl *minutesSpinCtrl{};
+    wxSpinCtrl *secondsSpinCtrl{};
+    wxTextCtrl* timerNameField{};
 
 wxDECLARE_EVENT_TABLE();
 

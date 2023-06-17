@@ -3,21 +3,46 @@
 #include "MainFrame.h"
 #include "App.h"
 
+wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
+                EVT_BUTTON(STARTBUTTON, MainFrame::OnStart)
+                EVT_BUTTON(STOPBUTTON, MainFrame::OnStop)
+                EVT_BUTTON(NEWBUTTON, MainFrame::OnNew)
+                EVT_BUTTON(RENAMEBUTTON, MainFrame::OnRename)
+                EVT_LISTBOX(LISTBOX, MainFrame::OnSelectCurrentTimer)
+                EVT_SPINCTRL(YEARSC, MainFrame::updateCurrentTimerDuration)
+                EVT_SPINCTRL(WEEKSC, MainFrame::updateCurrentTimerDuration)
+                EVT_SPINCTRL(DAYSC, MainFrame::updateCurrentTimerDuration)
+                EVT_SPINCTRL(HOURSC, MainFrame::updateCurrentTimerDuration)
+                EVT_SPINCTRL(MINUTESC, MainFrame::updateCurrentTimerDuration)
+                EVT_SPINCTRL(SECONDSC, MainFrame::updateCurrentTimerDuration)
+wxEND_EVENT_TABLE()
+
 MainFrame::MainFrame(const std::string &title) : wxFrame(nullptr, wxID_ANY, title),
                                                  mainPanel(new wxPanel(this, wxID_ANY, wxPoint(0, 0))) {
     initUI();
     loadTimers();
     setupUI();
+    updateSpinCtrlValues();
+    update();
 }
 
 void MainFrame::initUI() {
     try {
         timerListStaticText = new wxStaticText(mainPanel, wxID_ANY, "Saved Timers");
+        timerListBox = new wxListBox(mainPanel, LISTBOX, wxDefaultPosition, wxSize(200, 300), savedTimers);
+        newButton = new wxButton(mainPanel, NEWBUTTON, "New");
+        timerNameField = new wxTextCtrl(mainPanel, NAMEFIELD, "");
+        renameButton = new wxButton(mainPanel, RENAMEBUTTON, "Rename");
+        yearsSpinCtrl = new wxSpinCtrl(mainPanel, YEARSC, "", wxDefaultPosition, wxSize(120, -1));
+        weeksSpinCtrl = new wxSpinCtrl(mainPanel, WEEKSC, "", wxDefaultPosition, wxSize(120, -1));
+        daysSpinCtrl = new wxSpinCtrl(mainPanel, DAYSC, "", wxDefaultPosition, wxSize(120, -1));
+        hoursSpinCtrl = new wxSpinCtrl(mainPanel, HOURSC, "", wxDefaultPosition, wxSize(120, -1));
+        minutesSpinCtrl = new wxSpinCtrl(mainPanel, MINUTESC, "", wxDefaultPosition, wxSize(120, -1));
+        secondsSpinCtrl = new wxSpinCtrl(mainPanel, SECONDSC, "", wxDefaultPosition, wxSize(120, -1));
         startButton = new wxButton(mainPanel, STARTBUTTON, "Start");
         stopButton = new wxButton(mainPanel, STOPBUTTON, "Stop");
-        timerListBox = new wxListBox(mainPanel, wxID_ANY, wxDefaultPosition, wxSize(200, 300), savedTimers);
     } catch (const std::bad_alloc& e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "Failed to allocate memory for the UI elements. Terminating." << std::endl;
         std::terminate();
     }
 }
@@ -31,7 +56,7 @@ void MainFrame::loadTimers() {
         for (auto &timer: timers)
                 timerListBox->Append(timer->getName());
 
-
+    timerListBox->Select(0);
     currentTimer = timers[0];
 }
 
@@ -64,24 +89,24 @@ void MainFrame::setupUI() {
         leftColumn->Add(timerListStaticText, wxSizerFlags().Border(wxUP, 20).Center());
         leftColumn->Add(timerListBox);
 
-        name->Add(new wxButton(mainPanel, wxID_ANY, "New"), wxSizerFlags(wxALIGN_CENTER));
-        name->Add(new wxTextCtrl(mainPanel, wxID_ANY, currentTimer->getName()),
+        name->Add(newButton, wxSizerFlags(wxALIGN_CENTER));
+        name->Add(timerNameField,
                   wxSizerFlags(wxALIGN_CENTER).Border(wxLEFT, 10));
-        name->Add(new wxButton(mainPanel, wxID_ANY, "Update"), wxSizerFlags(wxALIGN_CENTER).Border(wxLEFT, 10));
+        name->Add(renameButton, wxSizerFlags(wxALIGN_CENTER).Border(wxLEFT, 10));
 
         year_par->Add(new wxStaticText(mainPanel, wxID_ANY, "years"), wxSizerFlags().Center());
-        month_par->Add(new wxStaticText(mainPanel, wxID_ANY, "months"), wxSizerFlags().Center());
+        month_par->Add(new wxStaticText(mainPanel, wxID_ANY, "weeks"), wxSizerFlags().Center());
         day_par->Add(new wxStaticText(mainPanel, wxID_ANY, "days"), wxSizerFlags().Center());
 
-        year_par->Add(new wxSpinCtrl(mainPanel, wxID_ANY, "", wxDefaultPosition, wxSize(120, -1)));
-        month_par->Add(new wxSpinCtrl(mainPanel, wxID_ANY, "", wxDefaultPosition, wxSize(120, -1)));
-        day_par->Add(new wxSpinCtrl(mainPanel, wxID_ANY, "", wxDefaultPosition, wxSize(120, -1)));
+        year_par->Add(yearsSpinCtrl);
+        month_par->Add(weeksSpinCtrl);
+        day_par->Add(daysSpinCtrl);
         year_par->Add(new wxStaticText(mainPanel, wxID_ANY, "hours"), wxSizerFlags().Border(wxUP, 5).Center());
-        year_par->Add(new wxSpinCtrl(mainPanel, wxID_ANY, "", wxDefaultPosition, wxSize(120, -1)));
+        year_par->Add(hoursSpinCtrl);
         month_par->Add(new wxStaticText(mainPanel, wxID_ANY, "minutes"), wxSizerFlags().Border(wxUP, 5).Center());
-        month_par->Add(new wxSpinCtrl(mainPanel, wxID_ANY, "", wxDefaultPosition, wxSize(120, -1)));
+        month_par->Add(minutesSpinCtrl);
         day_par->Add(new wxStaticText(mainPanel, wxID_ANY, "seconds"), wxSizerFlags().Border(wxUP, 5).Center());
-        day_par->Add(new wxSpinCtrl(mainPanel, wxID_ANY, "", wxDefaultPosition, wxSize(120, -1)));
+        day_par->Add(secondsSpinCtrl);
 
         controls->Add(startButton, wxSizerFlags(wxALIGN_CENTER));
         controls->Add(stopButton, wxSizerFlags(wxALIGN_CENTER).Border(wxLEFT, 10));
@@ -92,7 +117,7 @@ void MainFrame::setupUI() {
         rightColumn->Add(remainingTimeStaticText, wxSizerFlags().Border(wxUP, 5).Center());
         mainPanel->SetSizerAndFit(columns);
     } catch (const std::bad_alloc& e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "Failed to allocate memory for the UI elements. Terminating." << std::endl;
         std::terminate();
     }
     setupEventHandling();
@@ -102,6 +127,8 @@ void MainFrame::setupUI() {
 void MainFrame::setupEventHandling() {
     startButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnStart), nullptr, this);
     stopButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnStop), nullptr, this);
+    newButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnNew), nullptr, this);
+    renameButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnRename), nullptr, this);
 }
 
 void MainFrame::OnStart(wxCommandEvent &event) {
@@ -122,6 +149,7 @@ void MainFrame::OnStop(wxCommandEvent &event) {
 
 void MainFrame::update() {
     remainingTimeStaticText->SetLabel(wxString(currentTimer->getRemainingString("HH:MM:SS")));
+    timerNameField->SetValue(wxString(currentTimer->getName()));
     if (currentTimer->getState() == RUNNING) {
         startButton->Enable(false);
         stopButton->Enable(true);
@@ -131,8 +159,59 @@ void MainFrame::update() {
     }
 }
 
-wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
-                EVT_BUTTON(STARTBUTTON, MainFrame::OnStart)
-                EVT_BUTTON(STOPBUTTON, MainFrame::OnStop)
-wxEND_EVENT_TABLE()
+void MainFrame::OnNew(wxCommandEvent &event) {
+    try {
+        auto* newTimer = new Timer("Timer"+std::to_string(timers.size()+1),5);
+        timers.push_back(newTimer);
+        timerListBox->Append(newTimer->getName());
+    } catch (const std::bad_alloc& e) {
+        std::cerr << "Failed to allocate memory for a new timer. Terminating." << std::endl;
+        std::terminate();
+    }
+
+}
+
+void MainFrame::OnRename(wxCommandEvent &event) {
+    std::string newName = timerNameField->GetValue().ToStdString();
+    auto it = std::find(timers.begin(), timers.end(), currentTimer);
+    int timerListBoxIndex = static_cast<int>(std::distance(timers.begin(), it));
+    timerListBox->SetString(timerListBoxIndex, newName);
+    currentTimer->setName(newName);
+}
+
+
+void MainFrame::OnSelectCurrentTimer(wxCommandEvent &event) {
+    int selection = timerListBox->GetSelection();
+    currentTimer = timers[selection];
+    updateSpinCtrlValues();
+    update();
+}
+
+void MainFrame::updateCurrentTimerDuration(wxSpinEvent &event) {
+    int total = secondsSpinCtrl->GetValue();
+    total += minutesSpinCtrl->GetValue()*60;
+    total += hoursSpinCtrl->GetValue()*3600;
+    total += daysSpinCtrl->GetValue()*3600*24;
+    total += weeksSpinCtrl->GetValue()*3600*24*7;
+    total += yearsSpinCtrl->GetValue()*31'556'952;
+    currentTimer->setDuration(total);
+    update();
+}
+
+void MainFrame::updateSpinCtrlValues() {
+    int duration = currentTimer->getDuration();
+    int years = std::floor(static_cast<float>(duration) / 31'556'952.f);
+    int weeks = std::floor((duration - (years*31'556'952)) / 604'800);
+    int days = std::floor((duration - (years*31'556'952) - (weeks*604'800)) / 86'400);
+    int hours = std::floor((duration - (years*31'556'952) - (weeks*604'800) - (days*86'400)) / 3600);
+    int minutes = std::floor((duration - (years*31'556'952) - (weeks*604'800) - (days*86'400) - (hours*3600))/60);
+    int seconds = duration - (years*31'556'952) - (weeks*604'800) - (days*86'400) - (hours*3600) - (minutes*60);
+    yearsSpinCtrl->SetValue(years);
+    weeksSpinCtrl->SetValue(weeks);
+    daysSpinCtrl->SetValue(days);
+    hoursSpinCtrl->SetValue(hours);
+    minutesSpinCtrl->SetValue(minutes);
+    secondsSpinCtrl->SetValue(seconds);
+    update();
+}
 
