@@ -20,7 +20,7 @@ public:
 
     void setName(const std::string &s);
 
-    void setDuration(int duration);
+    void setDuration(int newDuration);
 
     [[nodiscard]] int getDuration() const;
 

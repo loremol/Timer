@@ -1,5 +1,5 @@
-#ifndef TIMER_MAINFRAME_H
-#define TIMER_MAINFRAME_H
+#ifndef TIMER_FRAME_H
+#define TIMER_FRAME_H
 
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
@@ -8,44 +8,44 @@
 #include "Timer.h"
 #include "App.h"
 
-enum eventID {
-    LISTBOX,
-    STARTBUTTON,
-    STOPBUTTON,
-    NEWBUTTON,
-    RENAMEBUTTON,
-    NAMEFIELD,
-    SPINCTRLID,
+enum eventId {
+    ListBox,
+    StartButton,
+    StopButton,
+    NewButton,
+    RenameButton,
+    NameField,
+    SpinCtrlId,
 };
 
-class MainFrame : public wxFrame {
+class frame : public wxFrame {
 public:
-    explicit MainFrame(const std::string &title);
+    explicit frame(const std::string &title);
 
 private:
-    void setupUI();
+    void setupUi();
 
     void setupEventHandling();
 
     void loadTimers();
 
-    void initUI();
+    void initUi();
 
     void update();
 
     const std::function<void()> updateView = [this]() {
-        wxGetApp().CallAfter([=]() { this->update(); });
+        wxGetApp().CallAfter([this]() { this->update(); });
     };
 
-    void OnStart(wxCommandEvent &event);
+    void onStart(wxCommandEvent &event);
 
-    void OnStop(wxCommandEvent &event);
+    void onStop(wxCommandEvent &event);
 
-    void OnNew(wxCommandEvent& event);
+    void onNew(wxCommandEvent& event);
 
-    void OnRename(wxCommandEvent& event);
+    void onRename(wxCommandEvent& event);
 
-    void OnSelectCurrentTimer(wxCommandEvent& event);
+    void onSelectCurrentTimer(wxCommandEvent& event);
 
     void updateSpinCtrlValues();
 
@@ -76,4 +76,4 @@ private:
     wxDECLARE_EVENT_TABLE();
 };
 
-#endif //TIMER_MAINFRAME_H
+#endif //TIMER_FRAME_H

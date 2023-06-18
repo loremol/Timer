@@ -81,10 +81,10 @@ void Timer::setName(const std::string &s) {
     name = s;
 }
 
-void Timer::setDuration(int duration) {
-    Timer::duration = duration;
+void Timer::setDuration(int newDuration) {
+    Timer::duration = newDuration;
     if(state==STOPPED)
-        remaining = duration;
+        remaining = newDuration;
 }
 
 Date &Timer::getStartDate() {
