@@ -1,8 +1,6 @@
-#include <cmath>
 #include <utility>
 #include <ctime>
 #include <iostream>
-#include <chrono>
 #include <thread>
 #include <gtest/gtest.h>
 #include "../src/Date.h"
@@ -52,8 +50,8 @@ TEST(Date, TMConstructor) {
     time_t localTime = time(nullptr);
     tm *currentTime = localtime(&localTime);
     Date date = Date(*currentTime);
-    ASSERT_EQ(date.getYear(), currentTime->tm_year+1900);
-    ASSERT_EQ(date.getMonth(), currentTime->tm_mon+1);
+    ASSERT_EQ(date.getYear(), currentTime->tm_year + 1900);
+    ASSERT_EQ(date.getMonth(), currentTime->tm_mon + 1);
     ASSERT_EQ(date.getDay(), currentTime->tm_mday);
     ASSERT_EQ(date.getHour(), currentTime->tm_hour);
     ASSERT_EQ(date.getMinute(), currentTime->tm_min);

@@ -13,6 +13,7 @@ enum eventId {
     StartButton,
     StopButton,
     NewButton,
+    DeleteButton,
     RenameButton,
     NameField,
     SpinCtrlId,
@@ -27,7 +28,7 @@ private:
 
     void loadTimers();
 
-    void initUi();
+    void allocateUiMemory();
 
     void updateTimerDates();
 
@@ -42,6 +43,7 @@ private:
             this->updateRemainingTime();
             this->updateControls();
             this->updateTimerDates();
+            mainPanel->Layout();
         });
     };
 
@@ -49,11 +51,13 @@ private:
 
     void onStop(wxCommandEvent &event);
 
-    void onNew(wxCommandEvent& event);
+    void onNew(wxCommandEvent &event);
 
-    void onRename(wxCommandEvent& event);
+    void onDelete(wxCommandEvent &event);
 
-    void onSelectCurrentTimer(wxCommandEvent& event);
+    void onRename(wxCommandEvent &event);
+
+    void onNewTimerSelection(wxCommandEvent &event);
 
     void updateSpinCtrlValues();
 
@@ -61,9 +65,11 @@ private:
 
     std::vector<Timer *> timers;
     std::thread thread;
-    Timer *currentTimer{};
+    Timer *currentTimer = nullptr;
     wxPanel *mainPanel;
+    wxBoxSizer *columns{}, *leftColumn{}, *rightColumn{}, *name{}, *remainingTime{}, *parameters{}, *controls{}, *yearsHoursParameters{}, *weeksMinutesParameters{}, *daysSecondsParameters{}, *hourPar{}, *minutePar{}, *secondPar{};
     wxStaticText *timerListStaticText{};
+    wxStaticText *yearsLabel{}, *weeksLabel{}, *daysLabel{}, *hoursLabel{}, *minutesLabel{}, *secondsLabel{};
     wxStaticText *startDateText{};
     wxStaticText *stopDateText{};
     wxListBox *timerListBox{};
@@ -72,6 +78,7 @@ private:
     wxButton *startButton{};
     wxButton *stopButton{};
     wxButton *newButton{};
+    wxButton *deleteButton{};
     wxButton *renameButton{};
     wxSpinCtrl *yearsSpinCtrl{};
     wxSpinCtrl *weeksSpinCtrl{};
@@ -79,9 +86,9 @@ private:
     wxSpinCtrl *hoursSpinCtrl{};
     wxSpinCtrl *minutesSpinCtrl{};
     wxSpinCtrl *secondsSpinCtrl{};
-    wxTextCtrl* timerNameField{};
+    wxTextCtrl *timerNameField{};
 
-    wxDECLARE_EVENT_TABLE();
+wxDECLARE_EVENT_TABLE();
 };
 
 #endif //TIMER_FRAME_H
