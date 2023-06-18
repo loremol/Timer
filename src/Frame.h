@@ -25,8 +25,6 @@ public:
 private:
     void setupUi();
 
-    void setupEventHandling();
-
     void loadTimers();
 
     void initUi();

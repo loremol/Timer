@@ -118,15 +118,7 @@ void frame::setupUi() {
         std::cerr << "Failed to allocate memory for the UI elements. Terminating." << std::endl;
         std::terminate();
     }
-    setupEventHandling();
     update();
-}
-
-void frame::setupEventHandling() {
-    startButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(frame::onStart), nullptr, this);
-    stopButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(frame::onStop), nullptr, this);
-    newButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(frame::onNew), nullptr, this);
-    renameButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(frame::onRename), nullptr, this);
 }
 
 void frame::onStart(wxCommandEvent &event) {
