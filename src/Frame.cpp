@@ -47,8 +47,7 @@ void frame::initUi() {
 }
 
 void frame::loadTimers() {
-    auto *t = new Timer("Timer1", 60);
-    timers.push_back(t);
+    timers.emplace_back(new Timer("Timer1", 60));
     if(timerListBox != nullptr)
         for (auto &timer: timers)
                 timerListBox->Append(timer->getName());
@@ -158,9 +157,9 @@ void frame::updateControls() {
 
 void frame::onNew(wxCommandEvent &event) {
     try {
-        auto* newTimer = new Timer("Timer"+std::to_string(timers.size()+1),5);
-        timers.push_back(newTimer);
-        timerListBox->Append(newTimer->getName());
+        std::string newName = std::to_string(timers.size()+1);
+        timers.emplace_back(new Timer("Timer"+newName,5));
+        timerListBox->Append(newName);
     } catch (const std::bad_alloc& e) {
         std::cerr << "Failed to allocate memory for a new timer. Terminating." << std::endl;
         std::terminate();
