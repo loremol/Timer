@@ -18,7 +18,9 @@ frame::frame(const std::string &title) : wxFrame(nullptr, wxID_ANY, title),
     loadTimers();
     setupUi();
     updateSpinCtrlValues();
-    update();
+    updateRemainingTime();
+    updateNameField();
+    updateControls();
 }
 
 void frame::initUi() {
@@ -118,7 +120,6 @@ void frame::setupUi() {
         std::cerr << "Failed to allocate memory for the UI elements. Terminating." << std::endl;
         std::terminate();
     }
-    update();
 }
 
 void frame::onStart(wxCommandEvent &event) {
@@ -137,19 +138,21 @@ void frame::onStop(wxCommandEvent &event) {
     currentTimer->stop(updateView);
 }
 
-void frame::update() {
-    remainingTimeStaticText->SetLabel(wxString(currentTimer->getRemainingString("HH:MM:SS")));
+void frame::updateNameField() {
     timerNameField->SetValue(wxString(currentTimer->getName()));
+}
+
+void frame::updateRemainingTime() {
+    remainingTimeStaticText->SetLabel(wxString(currentTimer->getRemainingString("HH:MM:SS")));
+}
+
+void frame::updateControls() {
     if (currentTimer->getState() == RUNNING) {
         startButton->Enable(false);
         stopButton->Enable(true);
-        startDateText->SetLabel(wxString("Timer started: " + currentTimer->getStartDate().getFormatted()));
-        stopDateText->SetLabel(wxString("Timer will stop: " + currentTimer->getEndDate().getFormatted()));
     } else {
         startButton->Enable(true);
         stopButton->Enable(false);
-        startDateText->SetLabel(wxString(""));
-        stopDateText->SetLabel(wxString(""));
     }
 }
 
@@ -176,8 +179,11 @@ void frame::onRename(wxCommandEvent &event) {
 void frame::onSelectCurrentTimer(wxCommandEvent &event) {
     int selection = timerListBox->GetSelection();
     currentTimer = timers[selection];
+    updateRemainingTime();
     updateSpinCtrlValues();
-    update();
+    updateNameField();
+    updateControls();
+    updateTimerDates();
 }
 
 void frame::updateCurrentTimerDuration(wxSpinEvent &event) {
@@ -188,7 +194,7 @@ void frame::updateCurrentTimerDuration(wxSpinEvent &event) {
     total += weeksSpinCtrl->GetValue()*3600*24*7;
     total += yearsSpinCtrl->GetValue()*3600*24*365;
     currentTimer->setDuration(total);
-    update();
+    updateRemainingTime();
 }
 
 void frame::updateSpinCtrlValues() {
@@ -205,6 +211,15 @@ void frame::updateSpinCtrlValues() {
     hoursSpinCtrl->SetValue(hours);
     minutesSpinCtrl->SetValue(minutes);
     secondsSpinCtrl->SetValue(seconds);
-    update();
+}
+
+void frame::updateTimerDates() {
+    if(currentTimer->getState() == RUNNING) {
+        startDateText->SetLabel(wxString("Timer started: " + currentTimer->getStartDate().getFormatted()));
+        stopDateText->SetLabel(wxString("Timer will stop: " + currentTimer->getEndDate().getFormatted()));
+    } else {
+        startDateText->SetLabel(wxString(""));
+        stopDateText->SetLabel(wxString(""));
+    }
 }
 

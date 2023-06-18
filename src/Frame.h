@@ -29,10 +29,20 @@ private:
 
     void initUi();
 
-    void update();
+    void updateTimerDates();
+
+    void updateControls();
+
+    void updateRemainingTime();
+
+    void updateNameField();
 
     const std::function<void()> updateView = [this]() {
-        wxGetApp().CallAfter([this]() { this->update(); });
+        wxGetApp().CallAfter([this]() {
+            this->updateRemainingTime();
+            this->updateControls();
+            this->updateTimerDates();
+        });
     };
 
     void onStart(wxCommandEvent &event);
