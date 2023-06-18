@@ -62,17 +62,24 @@ bool Timer::getState() const {
 
 std::string Timer::getRemainingString(const std::string &format) const {
     std::string s;
-    if(format == "HH:MM:SS") {
-        int hours = std::floor(static_cast<float>(remaining)/3600);
-        int minutes = std::floor((remaining - (hours*3600)) / 60);
-        int seconds = remaining - (hours * 3600) - (minutes * 60);
+    const auto f = [&format, &s](int totalSeconds) {
+        if (format == "HH:MM:SS") {
+            int hours = std::floor(static_cast<float>(totalSeconds) / 3600);
+            int minutes = std::floor((totalSeconds - (hours * 3600)) / 60);
+            int seconds = totalSeconds - (hours * 3600) - (minutes * 60);
 
-        s += Date::addZeroIfNeeded(hours) + ":";
-        s += Date::addZeroIfNeeded(minutes) + ":";
-        s += Date::addZeroIfNeeded(seconds);
-    } else {
-        s = "Format not supported.";
-    }
+            s += Date::addZeroIfNeeded(hours) + ":";
+            s += Date::addZeroIfNeeded(minutes) + ":";
+            s += Date::addZeroIfNeeded(seconds);
+        } else {
+            s = "Format not supported.";
+        }
+    };
+
+    if (getState() == STOPPED)
+        f(duration);
+    else
+        f(remaining);
 
     return s;
 }
@@ -83,7 +90,7 @@ void Timer::setName(const std::string &s) {
 
 void Timer::setDuration(int newDuration) {
     Timer::duration = newDuration;
-    if(state==STOPPED)
+    if (state == STOPPED)
         remaining = newDuration;
 }
 
