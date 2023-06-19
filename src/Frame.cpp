@@ -134,19 +134,20 @@ void frame::setupUi() {
 }
 
 void frame::onStart(wxCommandEvent &event) {
-    if (currentTimer->getState() == RUNNING)
-        return;
-
-    const auto f = [&]() { currentTimer->start(updateView); };
-    thread = std::thread{f};
-    thread.detach();
+    if (currentTimer->getState() == Stopped) {
+        const auto f = [this]() { currentTimer->start(updateView); };
+        if (threads.find(timerListBox->GetSelection()) == threads.end()) {
+            threads.insert(std::pair<int, std::thread>(timerListBox->GetSelection(), std::thread{f}));
+        }
+    }
 }
 
 void frame::onStop(wxCommandEvent &event) {
-    if (currentTimer->getState() == STOPPED)
-        return;
-
-    currentTimer->stop(updateView);
+    if (currentTimer->getState() == Running) {
+        currentTimer->stop(updateView);
+        threads.at(timerListBox->GetSelection()).join();
+        threads.erase(timerListBox->GetSelection());
+    }
 }
 
 void frame::updateNameField() {

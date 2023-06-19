@@ -5,6 +5,7 @@
 #include <wx/spinctrl.h>
 #include <vector>
 #include <thread>
+#include <map>
 #include "Timer.h"
 #include "App.h"
 
@@ -63,13 +64,17 @@ private:
 
     void updateCurrentTimerDuration(wxSpinEvent &event);
 
-    std::vector<Timer *> timers;
-    std::thread thread;
-    Timer *currentTimer = nullptr;
+    void showMemoryError(const bool &critical);
+
+    std::vector<std::shared_ptr<timer>> timers;
+    std::map<int, std::thread> threads;
+    std::shared_ptr<timer> currentTimer = nullptr;
     wxPanel *mainPanel;
     wxBoxSizer *columns{}, *leftColumn{}, *rightColumn{}, *name{}, *remainingTime{}, *parameters{}, *controls{}, *yearsHoursParameters{}, *weeksMinutesParameters{}, *daysSecondsParameters{}, *hourPar{}, *minutePar{}, *secondPar{};
     wxStaticText *timerListStaticText{};
     wxStaticText *yearsLabel{}, *weeksLabel{}, *daysLabel{}, *hoursLabel{}, *minutesLabel{}, *secondsLabel{};
+    std::vector<wxStaticText *> parameterLabels{};
+    std::vector<wxSpinCtrl *> parameterControls{};
     wxStaticText *startDateText{};
     wxStaticText *stopDateText{};
     wxListBox *timerListBox{};
