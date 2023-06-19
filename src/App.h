@@ -3,10 +3,10 @@
 
 #include <wx/wx.h>
 
-class App : public wxApp {
+class app : public wxApp {
     bool OnInit() override;
 };
 
-DECLARE_APP(App)
+DECLARE_APP(app)
 
 #endif //TIMER_APP_H

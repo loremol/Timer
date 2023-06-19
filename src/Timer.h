@@ -6,15 +6,16 @@
 #include <string>
 #include <atomic>
 #include <functional>
+#include <mutex>
 
-enum State {
-    STOPPED,
-    RUNNING
+enum state {
+    Stopped,
+    Running
 };
 
-class Timer {
+class timer {
 public:
-    explicit Timer(std::string name = "", int duration = 0);
+    explicit timer(std::string name = "", int duration = 0);
 
     [[nodiscard]] const std::string &getName() const;
 
@@ -32,9 +33,9 @@ public:
 
     [[nodiscard]] bool getState() const;
 
-    [[nodiscard]] Date &getStartDate();
+    [[nodiscard]] date &getStartDate();
 
-    [[nodiscard]] Date &getEndDate();
+    [[nodiscard]] date &getEndDate();
 
     void start(const std::function<void()> &updateView);
 
@@ -45,9 +46,8 @@ private:
 
     std::string name;
     int duration, remaining; // in seconds
-    Date startDate, endDate;
+    date startDate, endDate;
     bool state;
-
 };
 
 

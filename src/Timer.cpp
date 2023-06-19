@@ -7,26 +7,26 @@
 #include <chrono>
 #include <thread>
 
-Timer::Timer(std::string name, int duration) : name(std::move(name)), duration(duration), remaining(duration),
-                                               state(STOPPED) {
+timer::timer(std::string name, int duration) : name(std::move(name)), duration(duration), remaining(duration),
+                                               state(Stopped) {
 
 }
 
-void Timer::calcStartEndDates() {
+void timer::calcStartEndDates() {
     time_t localTime = time(nullptr);
     tm *currentTime = localtime(&localTime);
-    startDate = Date(*currentTime);
+    startDate = date(*currentTime);
 
     time_t endTime = time(nullptr) + duration;
     tm *timerEndTime = localtime(&endTime);
-    endDate = Date(*timerEndTime);
+    endDate = date(*timerEndTime);
 }
 
-void Timer::start(const std::function<void()> &updateView) {
-    state = RUNNING;
+void timer::start(const std::function<void()> &updateView) {
+    state = Running;
     calcStartEndDates();
     for (remaining = duration; remaining > 0; remaining--) {
-        if (state == STOPPED)
+        if (state == Stopped)
             return;
         updateView();
         std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -34,33 +34,33 @@ void Timer::start(const std::function<void()> &updateView) {
     stop(updateView);
 }
 
-void Timer::stop(const std::function<void()> &updateView) {
-    state = STOPPED;
+void timer::stop(const std::function<void()> &updateView) {
+    state = Stopped;
     remaining = duration;
     updateView();
 }
 
-const std::string &Timer::getName() const {
+const std::string &timer::getName() const {
     return name;
 }
 
-int Timer::getDuration() const {
+int timer::getDuration() const {
     return duration;
 }
 
-int Timer::getRemaining() const {
+int timer::getRemaining() const {
     return remaining;
 }
 
-bool Timer::isRunning() const {
+bool timer::isRunning() const {
     return state;
 }
 
-bool Timer::getState() const {
+bool timer::getState() const {
     return state;
 }
 
-std::string Timer::getRemainingString(const std::string &format) const {
+std::string timer::getRemainingString(const std::string &format) const {
     std::string s;
     const auto f = [&format, &s](int totalSeconds) {
         if (format == "HH:MM:SS") {
@@ -68,15 +68,15 @@ std::string Timer::getRemainingString(const std::string &format) const {
             int minutes = std::floor((totalSeconds - (hours * 3600)) / 60);
             int seconds = totalSeconds - (hours * 3600) - (minutes * 60);
 
-            s += Date::addZeroIfNeeded(hours) + ":";
-            s += Date::addZeroIfNeeded(minutes) + ":";
-            s += Date::addZeroIfNeeded(seconds);
+            s += date::addZeroIfNeeded(hours) + ":";
+            s += date::addZeroIfNeeded(minutes) + ":";
+            s += date::addZeroIfNeeded(seconds);
         } else {
             s = "Format not supported.";
         }
     };
 
-    if (getState() == STOPPED)
+    if (getState() == Stopped)
         f(duration);
     else
         f(remaining);
@@ -84,20 +84,20 @@ std::string Timer::getRemainingString(const std::string &format) const {
     return s;
 }
 
-void Timer::setName(const std::string &s) {
+void timer::setName(const std::string &s) {
     name = s;
 }
 
-void Timer::setDuration(int newDuration) {
-    Timer::duration = newDuration;
-    if (state == STOPPED)
+void timer::setDuration(int newDuration) {
+    timer::duration = newDuration;
+    if (state == Stopped)
         remaining = newDuration;
 }
 
-Date &Timer::getStartDate() {
+date &timer::getStartDate() {
     return startDate;
 }
 
-Date &Timer::getEndDate() {
+date &timer::getEndDate() {
     return endDate;
 }

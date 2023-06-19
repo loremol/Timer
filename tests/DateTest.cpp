@@ -6,8 +6,8 @@
 #include "../src/Date.h"
 
 TEST(Date, Constructor) {
-    Date date1 = Date(2023, 6, 1);
-    Date date2 = Date(2000, 2, 29, 20, 17, 36);
+    date date1 = date(2023, 6, 1);
+    date date2 = date(2000, 2, 29, 20, 17, 36);
 
     ASSERT_EQ(date1.getYear(), 2023);
     ASSERT_EQ(date1.getMonth(), 6);
@@ -28,28 +28,28 @@ TEST(Date, Constructor) {
 
 TEST(Date, InvalidDatesToConstructor) {
     // Negative parameters
-    ASSERT_THROW(Date(-1970, 1, 29, 20, 17, 36);, std::invalid_argument);
-    ASSERT_THROW(Date(1970, -1, 29, 20, 17, 36);, std::invalid_argument);
-    ASSERT_THROW(Date(1970, 1, -29, 20, 17, 36);, std::invalid_argument);
-    ASSERT_THROW(Date(1970, 1, 29, -20, 17, 36);, std::invalid_argument);
-    ASSERT_THROW(Date(1970, 1, 29, 20, -17, 36);, std::invalid_argument);
-    ASSERT_THROW(Date(1970, 1, 29, 20, 17, -36);, std::invalid_argument);
+    ASSERT_THROW(date(-1970, 1, 29, 20, 17, 36);, std::invalid_argument);
+    ASSERT_THROW(date(1970, -1, 29, 20, 17, 36);, std::invalid_argument);
+    ASSERT_THROW(date(1970, 1, -29, 20, 17, 36);, std::invalid_argument);
+    ASSERT_THROW(date(1970, 1, 29, -20, 17, 36);, std::invalid_argument);
+    ASSERT_THROW(date(1970, 1, 29, 20, -17, 36);, std::invalid_argument);
+    ASSERT_THROW(date(1970, 1, 29, 20, 17, -36);, std::invalid_argument);
 
     // Out of range parameters
-    ASSERT_THROW(Date(1970, 1, 35, 20, 17, 36);, std::invalid_argument);
-    ASSERT_THROW(Date(1970, 13, 29, 20, 17, 36);, std::invalid_argument);
-    ASSERT_THROW(Date(1970, 1, 29, 24, 17, 36);, std::invalid_argument);
-    ASSERT_THROW(Date(1970, 1, 29, 20, 60, 36);, std::invalid_argument);
-    ASSERT_THROW(Date(1970, 1, 29, 20, 17, 60);, std::invalid_argument);
+    ASSERT_THROW(date(1970, 1, 35, 20, 17, 36);, std::invalid_argument);
+    ASSERT_THROW(date(1970, 13, 29, 20, 17, 36);, std::invalid_argument);
+    ASSERT_THROW(date(1970, 1, 29, 24, 17, 36);, std::invalid_argument);
+    ASSERT_THROW(date(1970, 1, 29, 20, 60, 36);, std::invalid_argument);
+    ASSERT_THROW(date(1970, 1, 29, 20, 17, 60);, std::invalid_argument);
 
     // Non leap years
-    ASSERT_THROW(Date(1999, 2, 29, 20, 17, 36);, std::invalid_argument);
+    ASSERT_THROW(date(1999, 2, 29, 20, 17, 36);, std::invalid_argument);
 }
 
 TEST(Date, TMConstructor) {
     time_t localTime = time(nullptr);
     tm *currentTime = localtime(&localTime);
-    Date date = Date(*currentTime);
+    date date{*currentTime};
     ASSERT_EQ(date.getYear(), currentTime->tm_year + 1900);
     ASSERT_EQ(date.getMonth(), currentTime->tm_mon + 1);
     ASSERT_EQ(date.getDay(), currentTime->tm_mday);

@@ -2,83 +2,83 @@
 
 #include <stdexcept>
 
-Date::Date() : date() {
-    date.tm_year = 0;
-    date.tm_mon = 0;
-    date.tm_mday = 0;
-    date.tm_hour = 0;
-    date.tm_min = 0;
-    date.tm_sec = 0;
+date::date() {
+    timeStruct.tm_year = 0;
+    timeStruct.tm_mon = 0;
+    timeStruct.tm_mday = 0;
+    timeStruct.tm_hour = 0;
+    timeStruct.tm_min = 0;
+    timeStruct.tm_sec = 0;
 }
 
-Date::Date(tm time) : date(time) {
+date::date(const tm &time) : timeStruct(time) {
 }
 
-Date::Date(const int &year, const int &month, const int &day, const int &hour, const int &minute, const int &second)
-        : date() {
+date::date(const int &year, const int &month, const int &day, const int &hour, const int &minute, const int &second)
+        : timeStruct() {
     if (year < 1970)
-        throw std::invalid_argument("Invalid year passed to Date constructor.");
+        throw std::invalid_argument("Invalid year passed to timeStruct constructor.");
 
     if (month < 1 || month > 12)
-        throw std::invalid_argument("Invalid month passed to Date constructor.");
+        throw std::invalid_argument("Invalid month passed to timeStruct constructor.");
 
     if (day < 1 || day > 31)
-        throw std::invalid_argument("Invalid day passed to Date constructor.");
+        throw std::invalid_argument("Invalid day passed to timeStruct constructor.");
 
     if (hour < 0 || hour > 23)
-        throw std::invalid_argument("Invalid hour passed to Date constructor.");
+        throw std::invalid_argument("Invalid hour passed to timeStruct constructor.");
 
     if (minute < 0 || minute > 59)
-        throw std::invalid_argument("Invalid minute passed to Date constructor.");
+        throw std::invalid_argument("Invalid minute passed to timeStruct constructor.");
 
     if (second < 0 || second > 59)
-        throw std::invalid_argument("Invalid second passed to Date constructor.");
+        throw std::invalid_argument("Invalid second passed to timeStruct constructor.");
 
     if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30)
         throw std::invalid_argument(
-                "Invalid date passed to Date constructor. " + monthStrings[month - 1] + " has only 30 days.");
+                "Invalid timeStruct passed to timeStruct constructor. " + monthStrings[month - 1] + " has only 30 days.");
 
     if (month == 2 && year % 4 != 0 && day > 28)
         throw std::invalid_argument(
-                "Invalid date passed to Date constructor. February has only 28 days in " + std::to_string(year));
+                "Invalid timeStruct passed to timeStruct constructor. February has only 28 days in " + std::to_string(year));
 
     if (month == 2 && year % 4 == 0 && day > 29)
         throw std::invalid_argument(
-                "Invalid date passed to Date constructor. February has only 29 days in " + std::to_string(year));
+                "Invalid timeStruct passed to timeStruct constructor. February has only 29 days in " + std::to_string(year));
 
-    date.tm_year = year - 1900;
-    date.tm_mon = month - 1;
-    date.tm_mday = day;
-    date.tm_hour = hour;
-    date.tm_min = minute;
-    date.tm_sec = second;
+    timeStruct.tm_year = year - 1900;
+    timeStruct.tm_mon = month - 1;
+    timeStruct.tm_mday = day;
+    timeStruct.tm_hour = hour;
+    timeStruct.tm_min = minute;
+    timeStruct.tm_sec = second;
 }
 
-int Date::getYear() const {
-    return 1900 + date.tm_year;
+int date::getYear() const {
+    return 1900 + timeStruct.tm_year;
 }
 
-int Date::getMonth() const {
-    return 1 + date.tm_mon;
+int date::getMonth() const {
+    return 1 + timeStruct.tm_mon;
 }
 
-int Date::getDay() const {
-    return date.tm_mday;
+int date::getDay() const {
+    return timeStruct.tm_mday;
 }
 
-int Date::getHour() const {
-    return date.tm_hour;
+int date::getHour() const {
+    return timeStruct.tm_hour;
 }
 
-int Date::getMinute() const {
-    return date.tm_min;
+int date::getMinute() const {
+    return timeStruct.tm_min;
 }
 
-int Date::getSecond() const {
-    return date.tm_sec;
+int date::getSecond() const {
+    return timeStruct.tm_sec;
 }
 
-std::string Date::getFormatted() const {
+std::string date::getFormatted() const {
     using namespace std;
     string formattedDate;
     string monthString, dayString, hourString, minuteString, secondString;
@@ -94,7 +94,7 @@ std::string Date::getFormatted() const {
     return formattedDate;
 }
 
-std::string Date::addZeroIfNeeded(const int &value) {
+std::string date::addZeroIfNeeded(const int &value) {
     using namespace std;
     if (value >= 10) {
         return to_string(value);

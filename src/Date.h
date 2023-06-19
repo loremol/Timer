@@ -4,13 +4,13 @@
 #include <string>
 #include <memory>
 
-class Date {
+class date {
 public:
-    Date();
+    date();
 
-    explicit Date(tm time);
+    explicit date(const tm &time);
 
-    Date(const int &year, const int &month, const int &day, const int &hour = 0, const int &minute = 0,
+    date(const int &year, const int &month, const int &day, const int &hour = 0, const int &minute = 0,
          const int &second = 0);
 
     [[nodiscard]] int getYear() const;
@@ -30,7 +30,7 @@ public:
     [[nodiscard]] static std::string addZeroIfNeeded(const int &value);
 
 private:
-    tm date;
+    tm timeStruct{};
     std::string monthStrings[12] = {"January", "February", "March", "April", "May", "June", "July", "August",
                                     "September", "October", "November", "December"};
 };
