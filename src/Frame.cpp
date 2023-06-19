@@ -52,13 +52,25 @@ void frame::allocateUiMemory() {
         hoursLabel = new wxStaticText(mainPanel, wxID_ANY, "hours");
         minutesLabel = new wxStaticText(mainPanel, wxID_ANY, "minutes");
         secondsLabel = new wxStaticText(mainPanel, wxID_ANY, "seconds");
+        parameterLabels.push_back(yearsLabel);
+        parameterLabels.push_back(weeksLabel);
+        parameterLabels.push_back(daysLabel);
+        parameterLabels.push_back(hoursLabel);
+        parameterLabels.push_back(minutesLabel);
+        parameterLabels.push_back(secondsLabel);
 
-        yearsSpinCtrl = new wxSpinCtrl(mainPanel, SpinCtrlId, "", wxDefaultPosition, wxSize(120, -1));
-        weeksSpinCtrl = new wxSpinCtrl(mainPanel, SpinCtrlId, "", wxDefaultPosition, wxSize(120, -1));
-        daysSpinCtrl = new wxSpinCtrl(mainPanel, SpinCtrlId, "", wxDefaultPosition, wxSize(120, -1));
-        hoursSpinCtrl = new wxSpinCtrl(mainPanel, SpinCtrlId, "", wxDefaultPosition, wxSize(120, -1));
-        minutesSpinCtrl = new wxSpinCtrl(mainPanel, SpinCtrlId, "", wxDefaultPosition, wxSize(120, -1));
-        secondsSpinCtrl = new wxSpinCtrl(mainPanel, SpinCtrlId, "", wxDefaultPosition, wxSize(120, -1));
+        yearsSpinCtrl = new wxSpinCtrl(mainPanel, SpinCtrlId, "", wxDefaultPosition, wxSize(118, -1));
+        weeksSpinCtrl = new wxSpinCtrl(mainPanel, SpinCtrlId, "", wxDefaultPosition, wxSize(118, -1));
+        daysSpinCtrl = new wxSpinCtrl(mainPanel, SpinCtrlId, "", wxDefaultPosition, wxSize(118, -1));
+        hoursSpinCtrl = new wxSpinCtrl(mainPanel, SpinCtrlId, "", wxDefaultPosition, wxSize(118, -1));
+        minutesSpinCtrl = new wxSpinCtrl(mainPanel, SpinCtrlId, "", wxDefaultPosition, wxSize(118, -1));
+        secondsSpinCtrl = new wxSpinCtrl(mainPanel, SpinCtrlId, "", wxDefaultPosition, wxSize(118, -1));
+        parameterControls.push_back(yearsSpinCtrl);
+        parameterControls.push_back(weeksSpinCtrl);
+        parameterControls.push_back(daysSpinCtrl);
+        parameterControls.push_back(hoursSpinCtrl);
+        parameterControls.push_back(minutesSpinCtrl);
+        parameterControls.push_back(secondsSpinCtrl);
 
         startButton = new wxButton(mainPanel, StartButton, "Start");
         stopButton = new wxButton(mainPanel, StopButton, "Stop");
@@ -66,10 +78,18 @@ void frame::allocateUiMemory() {
         startDateText = new wxStaticText(mainPanel, wxID_ANY, "");
         stopDateText = new wxStaticText(mainPanel, wxID_ANY, "");
     } catch (const std::bad_alloc &e) {
-        std::cerr << "Failed to allocate memory for the UI elements. Terminating." << std::endl;
-        std::terminate();
+        showMemoryError(true);
     }
 }
+
+void frame::showMemoryError(const bool &critical) {
+    wxMessageDialog sd = wxMessageDialog(this, "Failed to allocate memory for the UI elements. Exiting the program.",
+                                         "Memory error occurred", wxOK);
+    sd.ShowModal();
+    if (critical)
+        exit(0);
+}
+
 
 void frame::loadTimers() {
     for (auto &timer: timers)
@@ -97,7 +117,7 @@ void frame::setupUi() {
 
     leftColumn->Add(deleteButton, wxSizerFlags().Center());
     leftColumn->Add(timerListStaticText, wxSizerFlags().Center().Border(wxUP, 20));
-    leftColumn->Add(timerListBox);
+    leftColumn->Add(timerListBox, wxSizerFlags().Border(wxUP, 5));
 
     name->Add(newButton, wxSizerFlags(wxALIGN_CENTER));
     name->Add(timerNameField,
@@ -172,9 +192,11 @@ void frame::updateControls() {
         stopButton->Enable(false);
         renameButton->Enable(false);
         deleteButton->Enable(false);
+        startButton->Show(false);
+        stopButton->Show(false);
         return;
     }
-    if (currentTimer->getState() == RUNNING) {
+    if (currentTimer->getState() == Running) {
         startButton->Enable(false);
         stopButton->Enable(true);
     } else {
@@ -183,22 +205,30 @@ void frame::updateControls() {
     }
     renameButton->Enable(true);
     deleteButton->Enable(true);
+    startButton->Show(true);
+    stopButton->Show(true);
 }
 
 void frame::onNew(wxCommandEvent &event) {
     try {
         int newIndex = static_cast<int>(timers.size());
-        wxString newName = wxGetTextFromUser("Enter the name of the new timer:", "New Timer",
-                                             "Timer " + std::to_string(timers.size() + 1));
+        std::string suggestedName = timerNameField->GetValue().ToStdString();
+        if (suggestedName.empty())
+            suggestedName = "Timer " + std::to_string(timers.size() + 1);
+
+        if (!timers.empty() || suggestedName.empty()) {
+            if (currentTimer->getName() == suggestedName)
+                suggestedName = "Timer " + std::to_string(timers.size() + 1);
+        }
+        wxString newName = wxGetTextFromUser("Enter the name of the new timer:", "New timer", suggestedName);
         if (newName.empty())
             return;
-        timers.emplace_back(new Timer(newName.ToStdString(), 60));
+        timers.emplace_back(std::make_shared<timer>(newName.ToStdString(), 60));
         timerListBox->Append(newName);
         timerListBox->Select(newIndex);
         onNewTimerSelection(event);
     } catch (const std::bad_alloc &e) {
-        std::cerr << "Failed to allocate memory for a new timer. Terminating." << std::endl;
-        std::terminate();
+        showMemoryError(false);
     }
 }
 
@@ -225,15 +255,20 @@ void frame::onDelete(wxCommandEvent &event) {
 
 void frame::onRename(wxCommandEvent &event) {
     std::string newName = timerNameField->GetValue().ToStdString();
-    auto it = std::find(timers.begin(), timers.end(), currentTimer);
-    int timerListBoxIndex = static_cast<int>(std::distance(timers.begin(), it));
-    timerListBox->SetString(timerListBoxIndex, newName);
-    currentTimer->setName(newName);
+    if (!newName.empty()) {
+        auto it = std::find(timers.begin(), timers.end(), currentTimer);
+        int timerListBoxIndex = static_cast<int>(std::distance(timers.begin(), it));
+        timerListBox->SetString(timerListBoxIndex, newName);
+        currentTimer->setName(newName);
+    } else {
+        wxMessageBox("Timer shouldn't have a blank name.");
+    }
 }
 
 void frame::onNewTimerSelection(wxCommandEvent &event) {
     int index = timerListBox->GetSelection();
-    currentTimer = timers[index];
+    if (index != -1)
+        currentTimer = timers[index];
     updateRemainingTime();
     updateSpinCtrlValues();
     updateNameField();
@@ -256,20 +291,20 @@ void frame::updateCurrentTimerDuration(wxSpinEvent &event) {
 
 void frame::updateSpinCtrlValues() {
     if (timers.empty()) {
-        yearsSpinCtrl->Enable(false);
-        weeksSpinCtrl->Enable(false);
-        daysSpinCtrl->Enable(false);
-        hoursSpinCtrl->Enable(false);
-        minutesSpinCtrl->Enable(false);
-        secondsSpinCtrl->Enable(false);
+        for (auto &spinCtrl: parameterControls) {
+            spinCtrl->Enable(false);
+            spinCtrl->Show(false);
+        }
+        for (auto &label: parameterLabels)
+            label->Show(false);
         return;
     } else if (timers.size() == 1) {
-        yearsSpinCtrl->Enable(true);
-        weeksSpinCtrl->Enable(true);
-        daysSpinCtrl->Enable(true);
-        hoursSpinCtrl->Enable(true);
-        minutesSpinCtrl->Enable(true);
-        secondsSpinCtrl->Enable(true);
+        for (auto &spinCtrl: parameterControls) {
+            spinCtrl->Enable(true);
+            spinCtrl->Show(true);
+        }
+        for (auto &label: parameterLabels)
+            label->Show(true);
     }
     int duration = currentTimer->getDuration();
     int years = std::floor(static_cast<float>(duration) / 31'556'952.f);
@@ -290,7 +325,7 @@ void frame::updateSpinCtrlValues() {
 
 void frame::updateTimerDates() {
     if (!timers.empty()) {
-        if (currentTimer->getState() == RUNNING) {
+        if (currentTimer->getState() == Running) {
             startDateText->SetLabel(wxString("Timer started: " + currentTimer->getStartDate().getFormatted()));
             stopDateText->SetLabel(wxString("Timer will stop: " + currentTimer->getEndDate().getFormatted()));
         } else {
