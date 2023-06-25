@@ -6,7 +6,7 @@ project(${PROJECT_NAME})
 find_package(wxWidgets REQUIRED)
 include(${wxWidgets_USE_FILE})
 
-set(SOURCE_FILES src/Frame.cpp src/Frame.h src/App.h src/Date.cpp src/Date.h src/Timer.cpp src/Timer.h)
+set(SOURCE_FILES src/Frame.cpp src/Frame.h src/App.h src/Date.cpp src/Date.h src/Timer.cpp src/Timer.h src/OptionsFrame.cpp src/OptionsFrame.h)
 add_executable(${PROJECT_NAME} src/App.cpp)
 add_library(core ${SOURCE_FILES})
 target_link_libraries(core ${wxWidgets_LIBRARIES})

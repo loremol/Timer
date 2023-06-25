@@ -6,7 +6,7 @@
 
 class date {
 public:
-    date();
+    date() = default;
 
     explicit date(const tm &time);
 
@@ -25,9 +25,11 @@ public:
 
     [[nodiscard]] int getSecond() const;
 
+    [[nodiscard]] time_t getUnixTimestamp();
+
     [[nodiscard]] std::string getFormatted() const;
 
-    [[nodiscard]] static std::string addZeroIfNeeded(const int &value);
+    static std::string addZeroIfNeeded(const int &value) ;
 
 private:
     tm timeStruct{};

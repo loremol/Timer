@@ -15,7 +15,12 @@ enum state {
 
 class timer {
 public:
-    explicit timer(std::string name = "", int duration = 0);
+    explicit timer(std::string name, int duration);
+    explicit timer(std::string name, const bool &state, const time_t &startTimestamp, const time_t &endTimeStamp);
+
+    ~timer() {
+        stop([](){});
+    }
 
     [[nodiscard]] const std::string &getName() const;
 
@@ -31,23 +36,26 @@ public:
 
     [[nodiscard]] bool isRunning() const;
 
-    [[nodiscard]] bool getState() const;
-
     [[nodiscard]] date &getStartDate();
 
     [[nodiscard]] date &getEndDate();
 
     void start(const std::function<void()> &updateView);
 
+    void requestStop();
+
     void stop(const std::function<void()> &updateView);
+
+    void saveToFile(std::ofstream &file);
 
 private:
     void calcStartEndDates();
 
     std::string name;
-    int duration, remaining; // in seconds
-    date startDate, endDate;
-    bool state;
+    time_t duration, remaining;
+    date startDate{}, endDate{};
+    std::atomic<bool> state;
+    std::atomic<bool> stopRequested = false;
 };
 
 

@@ -2,15 +2,6 @@
 
 #include <stdexcept>
 
-date::date() {
-    timeStruct.tm_year = 0;
-    timeStruct.tm_mon = 0;
-    timeStruct.tm_mday = 0;
-    timeStruct.tm_hour = 0;
-    timeStruct.tm_min = 0;
-    timeStruct.tm_sec = 0;
-}
-
 date::date(const tm &time) : timeStruct(time) {
 }
 
@@ -54,6 +45,36 @@ date::date(const int &year, const int &month, const int &day, const int &hour, c
     timeStruct.tm_sec = second;
 }
 
+std::string date::addZeroIfNeeded(const int &value) {
+    using namespace std;
+    if (value >= 10) {
+        return to_string(value);
+    } else {
+        std::string newString = "0" + to_string(value);
+        return newString;
+    }
+}
+
+std::string date::getFormatted() const {
+    using namespace std;
+    string formattedDate{};
+    string monthString = addZeroIfNeeded(getMonth());
+    string dayString = addZeroIfNeeded(getDay());
+    string hourString = addZeroIfNeeded(getHour());
+    string minuteString = addZeroIfNeeded(getMinute());
+    string secondString = addZeroIfNeeded(getSecond());
+
+    // HH:MM:SS DD/MM/YYYY
+    formattedDate = hourString + ":" + minuteString + ":" + secondString;
+    formattedDate += ", ";
+    formattedDate += dayString + "/" + monthString + "/" + to_string(getYear());
+    return formattedDate;
+}
+
+time_t date::getUnixTimestamp() {
+    return mktime(&timeStruct);
+}
+
 int date::getYear() const {
     return 1900 + timeStruct.tm_year;
 }
@@ -76,29 +97,4 @@ int date::getMinute() const {
 
 int date::getSecond() const {
     return timeStruct.tm_sec;
-}
-
-std::string date::getFormatted() const {
-    using namespace std;
-    string formattedDate;
-    string monthString, dayString, hourString, minuteString, secondString;
-    monthString = addZeroIfNeeded(getMonth());
-    dayString = addZeroIfNeeded(getDay());
-    hourString = addZeroIfNeeded(getHour());
-    minuteString = addZeroIfNeeded(getMinute());
-    secondString = addZeroIfNeeded(getSecond());
-    // HH:MM DD/MM/YYYY
-    formattedDate = hourString + ":" + minuteString + ":" + secondString;
-    formattedDate += ", ";
-    formattedDate += dayString + "/" + monthString + "/" + to_string(getYear());
-    return formattedDate;
-}
-
-std::string date::addZeroIfNeeded(const int &value) {
-    using namespace std;
-    if (value >= 10) {
-        return to_string(value);
-    } else {
-        return "0" + to_string(value);
-    }
 }

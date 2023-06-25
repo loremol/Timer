@@ -1,15 +1,18 @@
 #ifndef TIMER_FRAME_H
 #define TIMER_FRAME_H
 
-#include <wx/wx.h>
-#include <wx/spinctrl.h>
 #include <vector>
 #include <thread>
 #include <map>
+#include <fstream>
+#include <sstream>
+#include <wx/wx.h>
+#include <wx/spinctrl.h>
 #include "Timer.h"
 #include "App.h"
 
 enum eventId {
+    MenuEditOptions,
     ListBox,
     StartButton,
     StopButton,
@@ -48,6 +51,10 @@ private:
         });
     };
 
+    void onMenuFileQuit(wxCommandEvent &event);
+
+    void onMenuEditOptions(wxCommandEvent &event);
+
     void onStart(wxCommandEvent &event);
 
     void onStop(wxCommandEvent &event);
@@ -64,36 +71,36 @@ private:
 
     void updateCurrentTimerDuration(wxSpinEvent &event);
 
+    void onCloseWindow(wxCloseEvent &event);
+
     void showMemoryError(const bool &critical);
 
-    std::vector<std::shared_ptr<timer>> timers;
-    std::map<int, std::thread> threads;
+    std::vector<std::shared_ptr<timer>> timers{};
+    std::map<int, std::thread> threads{};
     std::shared_ptr<timer> currentTimer = nullptr;
-    wxPanel *mainPanel;
-    wxBoxSizer *columns{}, *leftColumn{}, *rightColumn{}, *name{}, *remainingTime{}, *parameters{}, *controls{}, *yearsHoursParameters{}, *weeksMinutesParameters{}, *daysSecondsParameters{}, *hourPar{}, *minutePar{}, *secondPar{};
+    wxPanel *mainPanel{};
+    wxMenuBar *menuBar{};
+    wxMenu *fileMenu{}, *editMenu{};
+    wxBoxSizer *columns{}, *leftColumn{}, *rightColumn{}, *timerManagementButtons{}, *timerNameSizer{}, *remainingTime{}, *parameters{}, *timerStartStop{};
+    wxBoxSizer *yearsHoursParameters{}, *weeksMinutesParameters{}, *daysSecondsParameters{}, *hourPar{}, *minutePar{}, *secondPar{};
+    wxBitmapButton *newBitmapButton{}, *deleteBitmapButton{}, *renameBitmapButton{};
     wxStaticText *timerListStaticText{};
     wxStaticText *yearsLabel{}, *weeksLabel{}, *daysLabel{}, *hoursLabel{}, *minutesLabel{}, *secondsLabel{};
+    wxStaticText *startDateText{}, *stopDateText{};
     std::vector<wxStaticText *> parameterLabels{};
     std::vector<wxSpinCtrl *> parameterControls{};
-    wxStaticText *startDateText{};
-    wxStaticText *stopDateText{};
     wxListBox *timerListBox{};
     wxArrayString savedTimers;
     wxStaticText *remainingTimeStaticText{};
-    wxButton *startButton{};
-    wxButton *stopButton{};
-    wxButton *newButton{};
-    wxButton *deleteButton{};
-    wxButton *renameButton{};
-    wxSpinCtrl *yearsSpinCtrl{};
-    wxSpinCtrl *weeksSpinCtrl{};
-    wxSpinCtrl *daysSpinCtrl{};
-    wxSpinCtrl *hoursSpinCtrl{};
-    wxSpinCtrl *minutesSpinCtrl{};
-    wxSpinCtrl *secondsSpinCtrl{};
-    wxTextCtrl *timerNameField{};
+    wxButton *startButton{}, *stopButton{};
+    wxSpinCtrl *yearsSpinCtrl{}, *weeksSpinCtrl{}, *daysSpinCtrl{}, *hoursSpinCtrl{}, *minutesSpinCtrl{}, *secondsSpinCtrl{};
+    wxStaticText *timerNameField{};
 
 wxDECLARE_EVENT_TABLE();
+
+    void startCurrentTimer();
+
+    void updateSelection();
 };
 
 #endif //TIMER_FRAME_H

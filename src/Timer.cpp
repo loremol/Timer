@@ -6,10 +6,24 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <fstream>
 
 timer::timer(std::string name, int duration) : name(std::move(name)), duration(duration), remaining(duration),
                                                state(Stopped) {
+    calcStartEndDates();
+}
 
+timer::timer(std::string name, const bool &state, const time_t &startTimestamp, const time_t &endTimeStamp)
+        : name(std::move(name)), state(state) {
+    startDate = date(*localtime(&startTimestamp));
+    endDate = date(*localtime(&endTimeStamp));
+    duration = endTimeStamp - startTimestamp;
+    if(isRunning()) {
+        time_t currentTime = time(nullptr);
+        remaining = endTimeStamp - currentTime;
+    } else {
+        remaining = duration;
+    }
 }
 
 void timer::calcStartEndDates() {
@@ -23,41 +37,49 @@ void timer::calcStartEndDates() {
 }
 
 void timer::start(const std::function<void()> &updateView) {
+    if(!isRunning()) {
+        calcStartEndDates();
+    }
     state = Running;
-    calcStartEndDates();
-    for (remaining = duration; remaining > 0; remaining--) {
-        if (state == Stopped)
-            return;
-        updateView();
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    for (; remaining > 0; remaining--) {
+        for (int i = 0; i < 40; i++) {
+            updateView();
+            std::this_thread::sleep_for(std::chrono::milliseconds(25));
+            if (stopRequested) {
+                stopRequested = false;
+                stop(updateView);
+                return;
+            }
+        }
     }
     stop(updateView);
 }
 
 void timer::stop(const std::function<void()> &updateView) {
-    state = Stopped;
     remaining = duration;
+    state = Stopped;
     updateView();
 }
 
-const std::string &timer::getName() const {
-    return name;
+void timer::requestStop() {
+    if (isRunning())
+        stopRequested = true;
 }
 
-int timer::getDuration() const {
-    return duration;
+void timer::saveToFile(std::ofstream &file) {
+    file << state << "\t" << name << "\t";
+    file << startDate.getUnixTimestamp() << "\t" << endDate.getUnixTimestamp() << std::endl;
 }
 
-int timer::getRemaining() const {
-    return remaining;
+void timer::setName(const std::string &s) {
+    name = s;
 }
 
-bool timer::isRunning() const {
-    return state;
-}
-
-bool timer::getState() const {
-    return state;
+void timer::setDuration(int newDuration) {
+    duration = newDuration;
+    if (state == Stopped)
+        remaining = newDuration;
+    calcStartEndDates();
 }
 
 std::string timer::getRemainingString(const std::string &format) const {
@@ -76,22 +98,12 @@ std::string timer::getRemainingString(const std::string &format) const {
         }
     };
 
-    if (getState() == Stopped)
-        f(duration);
+    if (!isRunning())
+        f(static_cast<int>(duration));
     else
-        f(remaining);
+        f(static_cast<int>(remaining));
 
     return s;
-}
-
-void timer::setName(const std::string &s) {
-    name = s;
-}
-
-void timer::setDuration(int newDuration) {
-    timer::duration = newDuration;
-    if (state == Stopped)
-        remaining = newDuration;
 }
 
 date &timer::getStartDate() {
@@ -100,4 +112,20 @@ date &timer::getStartDate() {
 
 date &timer::getEndDate() {
     return endDate;
+}
+
+const std::string &timer::getName() const {
+    return name;
+}
+
+int timer::getDuration() const {
+    return static_cast<int>(duration);
+}
+
+int timer::getRemaining() const {
+    return static_cast<int>(remaining);
+}
+
+bool timer::isRunning() const {
+    return state;
 }

@@ -4,9 +4,10 @@
 bool app::OnInit() {
     try {
         auto *mainFrame = new frame("Timer");
-        mainFrame->SetClientSize(635, 415);
-        mainFrame->SetMinClientSize(wxSize(635, 415));
-        mainFrame->SetMaxClientSize(wxSize(635, 415));
+        int width = 650, height = 400;
+        mainFrame->SetClientSize(width, height);
+        mainFrame->SetMinClientSize(wxSize(width, height));
+        mainFrame->SetMaxClientSize(wxSize(width, height));
         mainFrame->Center();
         mainFrame->Show();
         return true;
