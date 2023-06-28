@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <chrono>
 
 class date {
 public:
@@ -27,9 +28,11 @@ public:
 
     [[nodiscard]] time_t getUnixTimestamp();
 
+    std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<int64_t, std::ratio<1, 1>>> getTimestamp();
+
     [[nodiscard]] std::string getFormatted() const;
 
-    static std::string addZeroIfNeeded(const int &value) ;
+    static std::string addZeroIfNeeded(const int &value);
 
 private:
     tm timeStruct{};

@@ -27,15 +27,18 @@ date::date(const int &year, const int &month, const int &day, const int &hour, c
 
     if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30)
         throw std::invalid_argument(
-                "Invalid timeStruct passed to timeStruct constructor. " + monthStrings[month - 1] + " has only 30 days.");
+                "Invalid timeStruct passed to timeStruct constructor. " + monthStrings[month - 1] +
+                " has only 30 days.");
 
     if (month == 2 && year % 4 != 0 && day > 28)
         throw std::invalid_argument(
-                "Invalid timeStruct passed to timeStruct constructor. February has only 28 days in " + std::to_string(year));
+                "Invalid timeStruct passed to timeStruct constructor. February has only 28 days in " +
+                std::to_string(year));
 
     if (month == 2 && year % 4 == 0 && day > 29)
         throw std::invalid_argument(
-                "Invalid timeStruct passed to timeStruct constructor. February has only 29 days in " + std::to_string(year));
+                "Invalid timeStruct passed to timeStruct constructor. February has only 29 days in " +
+                std::to_string(year));
 
     timeStruct.tm_year = year - 1900;
     timeStruct.tm_mon = month - 1;
@@ -72,7 +75,7 @@ std::string date::getFormatted() const {
 }
 
 time_t date::getUnixTimestamp() {
-    return mktime(&timeStruct);
+    return std::mktime(&timeStruct);
 }
 
 int date::getYear() const {
@@ -97,4 +100,13 @@ int date::getMinute() const {
 
 int date::getSecond() const {
     return timeStruct.tm_sec;
+}
+
+using namespace std::chrono;
+
+time_point<system_clock, duration<int64_t, std::ratio<1, 1>>>
+date::getTimestamp() {
+    auto tp = std::chrono::system_clock::from_time_t(std::mktime(&timeStruct));
+    auto s = round<seconds>(tp);
+    return s;
 }

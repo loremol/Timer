@@ -4,9 +4,10 @@
 #include <wx/wx.h>
 
 class app : public wxApp {
+public:
     bool OnInit() override;
 };
 
-DECLARE_APP(app)
+wxDECLARE_APP(app);
 
 #endif //TIMER_APP_H

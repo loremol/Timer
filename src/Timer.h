@@ -2,11 +2,12 @@
 #define TIMER_TIMER_H
 
 #include "Date.h"
+#include "Observer.h"
+#include "OptionsFrame.h"
 
 #include <string>
 #include <atomic>
 #include <functional>
-#include <mutex>
 
 enum state {
     Stopped,
@@ -15,42 +16,42 @@ enum state {
 
 class timer {
 public:
-    explicit timer(std::string name, int duration);
-    explicit timer(std::string name, const bool &state, const time_t &startTimestamp, const time_t &endTimeStamp);
+    explicit timer(std::string name, int duration, observer *controller);
 
-    ~timer() {
-        stop([](){});
-    }
+    explicit timer(std::string name, const bool &state, const time_t &startTimestamp, const time_t &endTimeStamp,
+                   observer *controller);
 
-    [[nodiscard]] const std::string &getName() const;
+    void start();
+
+    void requestStop();
+
+    void updateWhileRunning();
+
+    void updateWhenFinished();
+
+    void saveToFile(std::ofstream &file);
 
     void setName(const std::string &s);
 
     void setDuration(int newDuration);
 
+    [[nodiscard]] bool isRunning() const;
+
     [[nodiscard]] int getDuration() const;
 
-    [[nodiscard]] int getRemaining() const;
+    [[nodiscard]] const std::string &getName() const;
 
     [[nodiscard]] std::string getRemainingString(const std::string &format) const;
-
-    [[nodiscard]] bool isRunning() const;
 
     [[nodiscard]] date &getStartDate();
 
     [[nodiscard]] date &getEndDate();
-
-    void start(const std::function<void()> &updateView);
-
-    void requestStop();
-
-    void stop(const std::function<void()> &updateView);
-
-    void saveToFile(std::ofstream &file);
-
 private:
+    void stop();
+
     void calcStartEndDates();
 
+    observer *controller;
     std::string name;
     time_t duration, remaining;
     date startDate{}, endDate{};

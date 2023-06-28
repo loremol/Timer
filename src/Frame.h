@@ -8,8 +8,10 @@
 #include <sstream>
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
+#include <list>
 #include "Timer.h"
 #include "App.h"
+#include "Observer.h"
 
 enum eventId {
     MenuEditOptions,
@@ -25,33 +27,50 @@ enum eventId {
 
 class frame : public wxFrame {
 public:
-    explicit frame(const std::string &title);
+    frame(const std::string &title, observer &controller);
+
+    void showMemoryError(const bool &critical);
+
+    std::vector<wxStaticText *> &parameterTexts() {
+        return parameterLabels;
+    }
+
+    std::vector<wxSpinCtrl *> &timeControls() {
+        return parameterControls;
+    }
+
+    wxListBox &timerList() {
+        return *timerListBox;
+    }
+
+    wxStaticText &remainingTime() {
+        return *remainingTimeStaticText;
+    }
+
+    wxStaticText &name() {
+        return *timerNameField;
+    }
+
+    wxStaticText &startDate() {
+        return *startDateText;
+    }
+
+    wxStaticText &endDate() {
+        return *endDateText;
+    }
+
+    wxPanel *mainPanel{};
+    wxBitmapButton *newBitmapButton{}, *deleteBitmapButton{}, *renameBitmapButton{};
+    wxButton *startButton{}, *stopButton{};
 
 private:
-    void setupUi();
-
-    void loadTimers();
-
     void allocateUiMemory();
 
-    void updateTimerDates();
-
-    void updateControls();
-
-    void updateRemainingTime();
-
-    void updateNameField();
-
-    const std::function<void()> updateView = [this]() {
-        wxGetApp().CallAfter([this]() {
-            this->updateRemainingTime();
-            this->updateControls();
-            this->updateTimerDates();
-            mainPanel->Layout();
-        });
-    };
+    void setupUi();
 
     void onMenuFileQuit(wxCommandEvent &event);
+
+    void onCloseWindow(wxCloseEvent &event);
 
     void onMenuEditOptions(wxCommandEvent &event);
 
@@ -65,42 +84,27 @@ private:
 
     void onRename(wxCommandEvent &event);
 
-    void onNewTimerSelection(wxCommandEvent &event);
+    void onTimeParameterChange(wxSpinEvent &event);
 
-    void updateSpinCtrlValues();
+    void onNewSelection(wxCommandEvent &event);
 
-    void updateCurrentTimerDuration(wxSpinEvent &event);
-
-    void onCloseWindow(wxCloseEvent &event);
-
-    void showMemoryError(const bool &critical);
-
-    std::vector<std::shared_ptr<timer>> timers{};
-    std::map<int, std::thread> threads{};
-    std::shared_ptr<timer> currentTimer = nullptr;
-    wxPanel *mainPanel{};
+    observer &controller;
     wxMenuBar *menuBar{};
     wxMenu *fileMenu{}, *editMenu{};
-    wxBoxSizer *columns{}, *leftColumn{}, *rightColumn{}, *timerManagementButtons{}, *timerNameSizer{}, *remainingTime{}, *parameters{}, *timerStartStop{};
+    wxBoxSizer *columns{}, *leftColumn{}, *rightColumn{}, *timerManagementButtons{}, *timerNameSizer{}, *remainingTimeSizer{}, *parameters{}, *timerStartStop{};
     wxBoxSizer *yearsHoursParameters{}, *weeksMinutesParameters{}, *daysSecondsParameters{}, *hourPar{}, *minutePar{}, *secondPar{};
-    wxBitmapButton *newBitmapButton{}, *deleteBitmapButton{}, *renameBitmapButton{};
+    wxListBox *timerListBox{};
     wxStaticText *timerListStaticText{};
     wxStaticText *yearsLabel{}, *weeksLabel{}, *daysLabel{}, *hoursLabel{}, *minutesLabel{}, *secondsLabel{};
-    wxStaticText *startDateText{}, *stopDateText{};
+    wxStaticText *startDateText{}, *endDateText{};
     std::vector<wxStaticText *> parameterLabels{};
     std::vector<wxSpinCtrl *> parameterControls{};
-    wxListBox *timerListBox{};
     wxArrayString savedTimers;
     wxStaticText *remainingTimeStaticText{};
-    wxButton *startButton{}, *stopButton{};
     wxSpinCtrl *yearsSpinCtrl{}, *weeksSpinCtrl{}, *daysSpinCtrl{}, *hoursSpinCtrl{}, *minutesSpinCtrl{}, *secondsSpinCtrl{};
     wxStaticText *timerNameField{};
 
 wxDECLARE_EVENT_TABLE();
-
-    void startCurrentTimer();
-
-    void updateSelection();
 };
 
 #endif //TIMER_FRAME_H

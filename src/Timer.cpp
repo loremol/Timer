@@ -1,5 +1,5 @@
 #include "Timer.h"
-
+#include "App.h"
 #include <cmath>
 #include <utility>
 #include <ctime>
@@ -8,17 +8,20 @@
 #include <thread>
 #include <fstream>
 
-timer::timer(std::string name, int duration) : name(std::move(name)), duration(duration), remaining(duration),
-                                               state(Stopped) {
+wxDECLARE_APP(app);
+
+timer::timer(std::string name, int duration, observer *controller)
+        : name(std::move(name)), duration(duration), remaining(duration),
+          state(Stopped), controller(controller) {
     calcStartEndDates();
 }
 
-timer::timer(std::string name, const bool &state, const time_t &startTimestamp, const time_t &endTimeStamp)
-        : name(std::move(name)), state(state) {
+timer::timer(std::string name, const bool &state, const time_t &startTimestamp, const time_t &endTimeStamp,
+             observer *controller) : name(std::move(name)), state(state), controller(controller) {
     startDate = date(*localtime(&startTimestamp));
     endDate = date(*localtime(&endTimeStamp));
     duration = endTimeStamp - startTimestamp;
-    if(isRunning()) {
+    if (isRunning()) {
         time_t currentTime = time(nullptr);
         remaining = endTimeStamp - currentTime;
     } else {
@@ -36,34 +39,58 @@ void timer::calcStartEndDates() {
     endDate = date(*timerEndTime);
 }
 
-void timer::start(const std::function<void()> &updateView) {
-    if(!isRunning()) {
+void timer::start() {
+    if (!isRunning()) {
         calcStartEndDates();
     }
     state = Running;
-    for (; remaining > 0; remaining--) {
-        for (int i = 0; i < 40; i++) {
-            updateView();
-            std::this_thread::sleep_for(std::chrono::milliseconds(25));
-            if (stopRequested) {
-                stopRequested = false;
-                stop(updateView);
-                return;
-            }
-        }
+    controller->updateControls();
+    using namespace std::chrono;
+    auto end = endDate.getTimestamp();
+    auto lastUpdate = round<seconds>(system_clock::now());
+    while (lastUpdate < end) {
+        if (stopRequested) break;
+        lastUpdate = round<seconds>(system_clock::now());
+        auto lastUpdateT = system_clock::to_time_t(lastUpdate);
+        auto endT = system_clock::to_time_t(end);
+        remaining = endT - lastUpdateT;
+        updateWhileRunning();
+        std::this_thread::sleep_for(milliseconds(25));
     }
-    stop(updateView);
+    stop();
 }
 
-void timer::stop(const std::function<void()> &updateView) {
-    remaining = duration;
+void timer::stop() {
+    stopRequested = false;
     state = Stopped;
-    updateView();
+    remaining = duration;
+    updateWhenFinished();
 }
 
 void timer::requestStop() {
     if (isRunning())
         stopRequested = true;
+}
+
+void timer::updateWhileRunning() {
+    if (controller != nullptr)
+        wxGetApp().CallAfter([this]() {
+            controller->updateRemainingTime();
+            controller->updateTimerDates();
+            controller->layoutView();
+        });
+}
+
+void timer::updateWhenFinished() {
+    if (controller != nullptr) {
+        wxGetApp().CallAfter([this]() {
+            controller->updateRemainingTime();
+            controller->updateControls();
+            controller->updateTimerDates();
+            controller->layoutView();
+        });
+        controller->eraseTimerThread(std::this_thread::get_id());
+    }
 }
 
 void timer::saveToFile(std::ofstream &file) {
@@ -79,7 +106,6 @@ void timer::setDuration(int newDuration) {
     duration = newDuration;
     if (state == Stopped)
         remaining = newDuration;
-    calcStartEndDates();
 }
 
 std::string timer::getRemainingString(const std::string &format) const {
@@ -122,10 +148,7 @@ int timer::getDuration() const {
     return static_cast<int>(duration);
 }
 
-int timer::getRemaining() const {
-    return static_cast<int>(remaining);
-}
-
 bool timer::isRunning() const {
     return state;
 }
+
