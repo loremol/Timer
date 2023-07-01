@@ -1,6 +1,7 @@
 #include "OptionsFrame.h"
 #include "FormatInfoDialog.h"
 #include <filesystem>
+
 auto infoIcon = std::filesystem::path{"../res/info.png"};
 
 wxBEGIN_EVENT_TABLE(optionsFrame, wxDialog)
@@ -48,8 +49,8 @@ void optionsFrame::allocateUiMemory() {
 
 void optionsFrame::setupUi() {
     bool correctInit = true;
-    for(auto& element : elements) {
-        if(element == nullptr) {
+    for (auto &element: elements) {
+        if (element == nullptr) {
             correctInit = false;
         }
     }
@@ -112,7 +113,7 @@ void optionsFrame::onDateFormatInfo(wxCommandEvent &event) {
 
 void optionsFrame::onTimerFormatInfo(wxCommandEvent &event) {
     auto *formatInfo = new formatInfoDialog("Formats info",
-                                            "%y = years\n%m = monts\n%w = weeks\n%d = days\n%H = hours\n%M = minutes\n%S = seconds");
+                                            "%y = years\n%m = months\n%w = weeks\n%d = days\n%H = hours\n%M = minutes\n%S = seconds");
     int width = 175, height = 300;
     formatInfo->SetClientSize(width, height);
     formatInfo->SetMinClientSize(wxSize(width, height));

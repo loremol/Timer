@@ -32,7 +32,7 @@ private:
     void onTimerFormatInfo(wxCommandEvent &event);
 
     observer *controller;
-    std::vector<wxObject*> elements;
+    std::vector<wxObject *> elements;
     wxPanel *mainPanel{};
     wxBoxSizer *column{}, *timerFormatRow{}, *dateFormatRow{};
     wxStaticText *timerFormatPrompt{}, *dateFormatPrompt{};

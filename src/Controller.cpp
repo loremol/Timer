@@ -4,6 +4,7 @@ float secondsQuantities[6] = {31536000.f, 604800.f, 86400.f, 3600.f, 60.f, 1.f};
 
 controller::controller() : view(new frame("Timer", this)) {
     loadTimers();
+    loadFormats();
     int width = 660, height = 400;
     view->SetClientSize(width, height);
     view->Center();
@@ -106,6 +107,7 @@ void controller::eraseTimerThread(const std::thread::id &threadId) {
 
 void controller::closeWindow() {
     saveTimers();
+    saveFormats();
     for (auto &thread: threads)
         eraseTimerThread(thread.second.get_id());
 
@@ -114,25 +116,9 @@ void controller::closeWindow() {
     view->Destroy();
 }
 
-void controller::saveTimers() {
-    remove("timers.txt");
-    std::ofstream file{"timers.txt", std::ios_base::binary};
-    if (file.is_open()) {
-        for (auto &timer: timers) {
-            auto startDateMs = timer->getStartDate().getPoint().time_since_epoch().count();
-            auto endDateMs = timer->getEndDate().getPoint().time_since_epoch().count();
-            file << timer->isRunning() << "\t" << timer->getName() << "\t";
-            file << startDateMs << "\t" << endDateMs << std::endl;
-            timer->requestStop();
-        }
-    }
-    timers.clear();
-    file.close();
-}
-
 void controller::loadTimers() {
     using namespace std::chrono;
-    std::ifstream file{"timers.txt", std::ios_base::binary};
+    std::ifstream file{"timers.txt"};
     std::stringstream lineStream;
     std::string lineString, buffer, sState, sName, sStartDate, sEndDate;
     std::vector<std::string> line;
@@ -165,6 +151,43 @@ void controller::loadTimers() {
         view->timerList().Select(0);
         selectedTimer = timers[0];
     }
+}
+
+void controller::saveTimers() {
+    remove("timers.txt");
+    std::ofstream file{"timers.txt"};
+    if (file.is_open()) {
+        for (auto &timer: timers) {
+            auto startDateMs = timer->getStartDate().getPoint().time_since_epoch().count();
+            auto endDateMs = timer->getEndDate().getPoint().time_since_epoch().count();
+            file << timer->isRunning() << "\t" << timer->getName() << "\t";
+            file << startDateMs << "\t" << endDateMs << std::endl;
+            timer->requestStop();
+        }
+    }
+    timers.clear();
+    file.close();
+}
+
+void controller::loadFormats() {
+    std::ifstream file{"formats.txt"};
+    std::string buffer;
+    if (file.is_open()) {
+        std::getline(file, buffer);
+        dateFormat = buffer;
+        std::getline(file, buffer);
+        timerFormat = buffer;
+    }
+    file.close();
+}
+
+void controller::saveFormats() {
+    remove("formats.txt");
+    std::ofstream file{"formats.txt"};
+    if (file.is_open()) {
+        file << dateFormat << "\n" << timerFormat << "\n";
+    }
+    file.close();
 }
 
 void controller::updateTimerView() {

@@ -3,9 +3,9 @@
 
 #include <wx/wx.h>
 
-class formatInfoDialog : public wxDialog{
+class formatInfoDialog : public wxDialog {
 public:
-    explicit formatInfoDialog(const std::string &title, const std::string &info);
+    formatInfoDialog(const std::string &title, const std::string &info);
 
 private:
     wxPanel *mainPanel{};

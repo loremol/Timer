@@ -124,72 +124,72 @@ std::string timer::formatRemainingTime(std::string format) {
     long yc{0}, monc{0}, wc{0}, dc{0}, hc{0}, mc{0}, sc{0};
 
     auto yearsIndex = format.find("%y");
-    if(yearsIndex != string::npos) {
+    if (yearsIndex != string::npos) {
         auto y = duration_cast<duration<long, std::ratio<31536000>>>(remaining);
-        remaining-=y;
+        remaining -= y;
         yc = y.count();
-        auto before = format.substr(0,yearsIndex);
-        auto after = format.substr(yearsIndex+2);
+        auto before = format.substr(0, yearsIndex);
+        auto after = format.substr(yearsIndex + 2);
         format = before + to_string(yc) + "y" + after;
     }
 
     auto monthIndex = format.find("%m");
-    if(monthIndex != string::npos) {
+    if (monthIndex != string::npos) {
         auto mon = duration_cast<months>(remaining);
-        remaining-=mon;
+        remaining -= mon;
         monc = mon.count();
-        auto before = format.substr(0,monthIndex);
-        auto after = format.substr(monthIndex+2);
+        auto before = format.substr(0, monthIndex);
+        auto after = format.substr(monthIndex + 2);
         format = before + to_string(monc) + "mon" + after;
     }
 
     auto weeksIndex = format.find("%w");
-    if(weeksIndex != string::npos) {
+    if (weeksIndex != string::npos) {
         auto w = duration_cast<weeks>(remaining);
-        remaining-=w;
+        remaining -= w;
         wc = w.count();
-        auto before = format.substr(0,weeksIndex);
-        auto after = format.substr(weeksIndex+2);
+        auto before = format.substr(0, weeksIndex);
+        auto after = format.substr(weeksIndex + 2);
         format = before + to_string(wc) + "w" + after;
     }
 
     auto daysIndex = format.find("%d");
-    if(daysIndex != string::npos){
+    if (daysIndex != string::npos) {
         auto d = duration_cast<days>(remaining);
         remaining -= d;
         dc = d.count();
-        auto before = format.substr(0,daysIndex);
-        auto after = format.substr(daysIndex+2);
+        auto before = format.substr(0, daysIndex);
+        auto after = format.substr(daysIndex + 2);
         format = before + to_string(dc) + "d" + after;
     }
 
     auto hoursIndex = format.find("%H");
-    if(hoursIndex != string::npos) {
+    if (hoursIndex != string::npos) {
         auto h = duration_cast<hours>(remaining);
         remaining -= h;
         hc = h.count();
-        auto before = format.substr(0,hoursIndex);
-        auto after = format.substr(hoursIndex+2);
+        auto before = format.substr(0, hoursIndex);
+        auto after = format.substr(hoursIndex + 2);
         format = before + to_string(hc) + "h" + after;
     }
 
     auto minutesIndex = format.find("%M");
-    if(minutesIndex != string::npos) {
+    if (minutesIndex != string::npos) {
         auto min = duration_cast<minutes>(remaining);
         remaining -= min;
         mc = min.count();
-        auto before = format.substr(0,minutesIndex);
-        auto after = format.substr(minutesIndex+2);
+        auto before = format.substr(0, minutesIndex);
+        auto after = format.substr(minutesIndex + 2);
         format = before + to_string(mc) + "m" + after;
     }
 
     auto secondsIndex = format.find("%S");
-    if(secondsIndex != string::npos) {
+    if (secondsIndex != string::npos) {
         auto s = duration_cast<seconds>(remaining);
-        remaining -=s;
+        remaining -= s;
         sc = s.count();
-        auto before = format.substr(0,secondsIndex);
-        auto after = format.substr(secondsIndex+2);
+        auto before = format.substr(0, secondsIndex);
+        auto after = format.substr(secondsIndex + 2);
         format = before + to_string(sc) + "s" + after;
     }
 

@@ -24,12 +24,11 @@ std::string date::addZeroIfNeeded(const long &value) {
     }
 }
 
-std::string date::formatDate(const std::string &format) const {
+std::string date::formatDate(std::string format) const {
     using namespace std;
-    string formattedDate{format};
     auto hour = format.find("%H");
     if (hour != string::npos) {
-        formattedDate.replace(hour, 2, addZeroIfNeeded(getHour()));
+        format.replace(hour, 2, addZeroIfNeeded(getHour()));
     }
 
     auto americanHour = format.find("%I");
@@ -43,77 +42,77 @@ std::string date::formatDate(const std::string &format) const {
         else
             american = addZeroIfNeeded(getHour());
 
-        formattedDate.replace(americanHour, 2, american);
+        format.replace(americanHour, 2, american);
     }
 
     auto meridian = format.find("%p");
     if (meridian != string::npos) {
-        formattedDate.replace(meridian, 2, getHour() < 12 ? "AM" : "PM");
+        format.replace(meridian, 2, getHour() < 12 ? "AM" : "PM");
     }
 
     auto minute = format.find("%M");
     if (minute != string::npos) {
-        formattedDate.replace(minute, 2, addZeroIfNeeded(getMinute()));
+        format.replace(minute, 2, addZeroIfNeeded(getMinute()));
     }
 
     auto second = format.find("%S");
     if (second != string::npos) {
-        formattedDate.replace(second, 2, addZeroIfNeeded(getSecond()));
+        format.replace(second, 2, addZeroIfNeeded(getSecond()));
     }
 
     auto day = format.find("%d");
     if (day != string::npos) {
-        formattedDate.replace(day, 2, addZeroIfNeeded(getDay()));
+        format.replace(day, 2, addZeroIfNeeded(getDay()));
     }
 
     auto littleDay = format.find("%e");
     if (littleDay != string::npos) {
-        auto before = formattedDate.substr(0, littleDay);
-        auto after = formattedDate.substr(littleDay + 2);
-        formattedDate = before + to_string(getDay()) + after;
+        auto before = format.substr(0, littleDay);
+        auto after = format.substr(littleDay + 2);
+        format = before + to_string(getDay()) + after;
     }
 
     auto month = format.find("%m");
     if (month != string::npos) {
-        formattedDate.replace(month, 2, addZeroIfNeeded(getMonth()));
+        format.replace(month, 2, addZeroIfNeeded(getMonth()));
     }
 
     auto littleMonth = format.find("%f");
     if (littleMonth != string::npos) {
-        auto before = formattedDate.substr(0, littleMonth);
-        auto after = formattedDate.substr(littleMonth + 2);
-        formattedDate = before + to_string(getMonth()) + after;
+        auto before = format.substr(0, littleMonth);
+        auto after = format.substr(littleMonth + 2);
+        format = before + to_string(getMonth()) + after;
     }
 
     auto literalMonth = format.find("%B");
     if (literalMonth != string::npos) {
-        auto before = formattedDate.substr(0, literalMonth);
-        auto after = formattedDate.substr(literalMonth + 2);
-        formattedDate = before + monthNames[getMonth() - 1] + after;
+        auto before = format.substr(0, literalMonth);
+        auto after = format.substr(literalMonth + 2);
+        format = before + monthNames[getMonth() - 1] + after;
     }
 
     auto littleLiteralMonth = format.find("%b");
     if (littleLiteralMonth != string::npos) {
-        auto before = formattedDate.substr(0, littleLiteralMonth);
-        auto after = formattedDate.substr(littleLiteralMonth + 2);
-        formattedDate = before + shortMonthNames[getMonth() - 1] + after;
+        auto before = format.substr(0, littleLiteralMonth);
+        auto after = format.substr(littleLiteralMonth + 2);
+        format = before + shortMonthNames[getMonth() - 1] + after;
     }
 
     auto year = format.find("%Y");
     if (year != string::npos) {
-        auto before = formattedDate.substr(0, year);
-        auto after = formattedDate.substr(year + 2);
-        formattedDate = before + to_string(getYear()) + after;
+        auto before = format.substr(0, year);
+        auto after = format.substr(year + 2);
+        format = before + to_string(getYear()) + after;
     }
 
     auto littleYear = format.find("%y");
     if (littleYear != string::npos) {
-        auto before = formattedDate.substr(0, littleYear);
-        auto after = formattedDate.substr(littleYear + 2);
-        formattedDate = before + to_string(getYear()).substr(2) + after;
+        auto before = format.substr(0, littleYear);
+        auto after = format.substr(littleYear + 2);
+        format = before + to_string(getYear()).substr(2) + after;
     }
 
-    return formattedDate;
+    return format;
 }
 
 long date::getSecondsFromEpoch() {

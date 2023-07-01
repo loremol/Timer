@@ -48,6 +48,10 @@ private:
 
     void saveTimers();
 
+    void loadFormats();
+
+    void saveFormats();
+
     void updateSpinCtrlValues();
 
     void updateNameField();
@@ -59,7 +63,7 @@ private:
     frame *view;
     std::shared_ptr<timer> selectedTimer = nullptr;
     std::string timerFormat{"%M:%S"};
-    std::string dateFormat{"%H:%M:%S, %d/%m/%Y"};
+    std::string dateFormat{"%H:%M:%S, %d %B %Y"};
 };
 
 

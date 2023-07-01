@@ -27,7 +27,7 @@ public:
 
     std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> getPoint();
 
-    [[nodiscard]] std::string formatDate(const std::string &format) const;
+    [[nodiscard]] std::string formatDate(std::string format) const;
 
     static std::string addZeroIfNeeded(const long &value);
 
