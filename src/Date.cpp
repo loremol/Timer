@@ -14,6 +14,51 @@ date::date(const std::chrono::time_point<std::chrono::system_clock, std::chrono:
     timeStruct = *localtime(&timer);
 }
 
+date::date(const int &year, const int &month, const int &day, const int &hour, const int &minute, const int &second) {
+    if (year < 1970)
+        throw std::invalid_argument("Invalid year passed to timeStruct constructor.");
+
+    if (month < 1 || month > 12)
+        throw std::invalid_argument("Invalid month passed to timeStruct constructor.");
+
+    if (day < 1 || day > 31)
+        throw std::invalid_argument("Invalid day passed to timeStruct constructor.");
+
+    if (hour < 0 || hour > 23)
+        throw std::invalid_argument("Invalid hour passed to timeStruct constructor.");
+
+    if (minute < 0 || minute > 59)
+        throw std::invalid_argument("Invalid minute passed to timeStruct constructor.");
+
+    if (second < 0 || second > 59)
+        throw std::invalid_argument("Invalid second passed to timeStruct constructor.");
+
+    if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30)
+        throw std::invalid_argument(
+                "Invalid timeStruct passed to timeStruct constructor. " + monthNames[month - 1] +
+                " has only 30 days.");
+
+    if (month == 2 && year % 4 != 0 && day > 28)
+        throw std::invalid_argument(
+                "Invalid timeStruct passed to timeStruct constructor. February has only 28 days in " +
+                std::to_string(year));
+
+    if (month == 2 && year % 4 == 0 && day > 29)
+        throw std::invalid_argument(
+                "Invalid timeStruct passed to timeStruct constructor. February has only 29 days in " +
+                std::to_string(year));
+
+    timeStruct.tm_year = year - 1900;
+    timeStruct.tm_mon = month - 1;
+    timeStruct.tm_mday = day;
+    timeStruct.tm_hour = hour;
+    timeStruct.tm_min = minute;
+    timeStruct.tm_sec = second;
+    using namespace std::chrono;
+    auto msSinceEpoch = duration_cast<milliseconds>(static_cast<seconds>(mktime(&timeStruct)));
+    point = time_point<system_clock, milliseconds>() + msSinceEpoch;
+}
+
 std::string date::addZeroIfNeeded(const long &value) {
     using namespace std;
     if (value >= 10) {

@@ -7,7 +7,7 @@
 
 class date {
 public:
-    date() = default;
+    explicit date(const int &year = 1970, const int &month = 1, const int &day = 1, const int &hour = 0, const int &minute = 0, const int &second = 0);
 
     explicit date(const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &timePoint);
 
