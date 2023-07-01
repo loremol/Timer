@@ -1,11 +1,11 @@
 #include "Controller.h"
 
-controller::controller() : view(new frame("Timer", *this)) {
+float secondsQuantities[6] = {31536000.f, 604800.f, 86400.f, 3600.f, 60.f, 1.f};
+
+controller::controller() : view(new frame("Timer", this)) {
     loadTimers();
-    int width = 650, height = 400;
+    int width = 660, height = 400;
     view->SetClientSize(width, height);
-    view->SetMinClientSize(wxSize(width, height));
-    view->SetMaxClientSize(wxSize(width, height));
     view->Center();
     view->Show();
     updateTimerView();
@@ -25,7 +25,7 @@ void controller::createNewTimer() {
         wxString newName = wxGetTextFromUser("Enter the new timer's name:", "New timer", suggestedName);
         if (newName.empty())
             return;
-        timers.emplace_back(std::make_shared<timer>(newName.ToStdString(), 60, this));
+        timers.emplace_back(std::make_shared<timer>(newName.ToStdString(), 60 * 5, this));
         view->timerList().Append(newName);
         view->timerList().Select(newIndex);
         updateTimerView();
@@ -51,7 +51,6 @@ void controller::deleteSelectedTimer() {
         }
         updateTimerView();
     }
-
 }
 
 void controller::renameSelectedTimer() {
@@ -66,6 +65,11 @@ void controller::renameSelectedTimer() {
 }
 
 void controller::startSelectedTimer() {
+    int runningTimers = 0;
+    for (auto &timer: timers)
+        if (timer->isRunning()) runningTimers++;
+    if (threads.size() > runningTimers) return;
+
     const auto f = [this]() { selectedTimer->start(); };
     if (threads.find(view->timerList().GetSelection()) == threads.end()) {
         threads.insert(std::pair<int, std::thread>(view->timerList().GetSelection(), std::thread{f}));
@@ -76,6 +80,15 @@ void controller::startSelectedTimer() {
 void controller::stopSelectedTimer() {
     if (!selectedTimer->isRunning()) return;
     waitForTimerStop(selectedTimer);
+}
+
+void controller::waitForTimerStop(const std::shared_ptr<timer> &timer) {
+    if (timer->isRunning()) {
+        timer->requestStop();
+        while (!timer->hasFinished()) {
+
+        }
+    }
 }
 
 void controller::eraseTimerThread(const std::thread::id &threadId) {
@@ -92,21 +105,66 @@ void controller::eraseTimerThread(const std::thread::id &threadId) {
 }
 
 void controller::closeWindow() {
-    std::remove("timers.txt");
-    std::ofstream file;
-    file.open("timers.txt", std::ios_base::app);
-    if (file.is_open()) {
-        for (auto &timer: timers) {
-            timer->saveToFile(file);
-            timer->requestStop();
-        }
-    }
-    file.close();
+    saveTimers();
     for (auto &thread: threads)
         eraseTimerThread(thread.second.get_id());
 
     assert(threads.empty());
+    assert(timers.empty());
     view->Destroy();
+}
+
+void controller::saveTimers() {
+    remove("timers.txt");
+    std::ofstream file{"timers.txt", std::ios_base::binary};
+    if (file.is_open()) {
+        for (auto &timer: timers) {
+            auto startDateMs = timer->getStartDate().getPoint().time_since_epoch().count();
+            auto endDateMs = timer->getEndDate().getPoint().time_since_epoch().count();
+            file << timer->isRunning() << "\t" << timer->getName() << "\t";
+            file << startDateMs << "\t" << endDateMs << std::endl;
+            timer->requestStop();
+        }
+    }
+    timers.clear();
+    file.close();
+}
+
+void controller::loadTimers() {
+    using namespace std::chrono;
+    std::ifstream file{"timers.txt", std::ios_base::binary};
+    std::stringstream lineStream;
+    std::string lineString, buffer, sState, sName, sStartDate, sEndDate;
+    std::vector<std::string> line;
+    if (file.is_open()) {
+        while (std::getline(file, lineString)) {
+            lineStream.str(lineString);
+            while (std::getline(lineStream, buffer, '\t')) {
+                line.push_back(buffer);
+            }
+            auto state = static_cast<std::atomic<bool>>(std::stoi(line.at(0)));
+            sName = line.at(1);
+            auto startTimestamp = time_point<system_clock, milliseconds>{milliseconds(std::stol(line.at(2)))};
+            auto endTimestamp = time_point<system_clock, milliseconds>{milliseconds(std::stol(line.at(3)))};
+            timers.emplace_back(std::make_shared<timer>(sName, state, startTimestamp, endTimestamp, this));
+
+            line.clear();
+            lineStream.clear();
+        }
+    }
+    file.close();
+    int i = 0;
+    for (auto &timer: timers) {
+        selectedTimer = timer;
+        view->timerList().Append(timer->getName());
+        view->timerList().SetSelection(i++);
+        if (timer->isRunning())
+            startSelectedTimer();
+    }
+    if (!timers.empty()) {
+        view->timerList().Select(0);
+        selectedTimer = timers[0];
+    }
 }
 
 void controller::updateTimerView() {
@@ -123,7 +181,7 @@ void controller::updateTimerView() {
 }
 
 void controller::layoutView() {
-    view->mainPanel->Layout();
+    view->panel()->Layout();
 }
 
 void controller::updateControls() {
@@ -151,7 +209,7 @@ void controller::updateControls() {
 
 void controller::updateRemainingTime() {
     if (!timers.empty() && selectedTimer != nullptr) {
-        view->remainingTime().SetLabel(wxString(selectedTimer->getRemainingString("HH:MM:SS")));
+        view->remainingTime().SetLabel(wxString(selectedTimer->formatRemainingTime(timerFormat)));
     } else {
         view->remainingTime().SetLabel(wxString(""));
     }
@@ -159,8 +217,10 @@ void controller::updateRemainingTime() {
 
 void controller::updateTimerDates() {
     if (!timers.empty() && selectedTimer->isRunning()) {
-        view->startDate().SetLabel(wxString("Timer started: " + selectedTimer->getStartDate().getFormatted()));
-        view->endDate().SetLabel(wxString("Timer will stop: " + selectedTimer->getEndDate().getFormatted()));
+        view->startDate().SetLabel(wxString("Timer started: " + selectedTimer->getStartDate().formatDate(
+                dateFormat)));
+        view->endDate().SetLabel(wxString("Timer will stop: " + selectedTimer->getEndDate().formatDate(
+                dateFormat)));
     } else {
         view->startDate().SetLabel(wxString(""));
         view->endDate().SetLabel(wxString(""));
@@ -168,54 +228,13 @@ void controller::updateTimerDates() {
 }
 
 void controller::updateSelectedTimerDuration() {
-    int secondsQuantities[] = {3600 * 24 * 365, 3600 * 24 * 7, 3600 * 24, 3600, 60, 1};
     int i = 0, total = 0;
     for (auto &ctrl: view->timeControls()) {
-        total += ctrl->GetValue() * secondsQuantities[i++];
+        total += ctrl->GetValue() * static_cast<int>(secondsQuantities[i++]);
     }
     selectedTimer->setDuration(total);
     updateRemainingTime();
     layoutView();
-}
-
-void controller::loadTimers() {
-    std::ifstream file{};
-    std::stringstream lineStream;
-    std::string lineString, buffer, sState, sName, sStartDate, sEndDate;
-    std::vector<std::string> line;
-    file.open("timers.txt");
-    if (file.is_open()) {
-        while (std::getline(file, lineString)) {
-            lineStream.str(lineString);
-            while (std::getline(lineStream, buffer, '\t')) {
-                line.push_back(buffer);
-            }
-            auto state = static_cast<std::atomic<bool>>(std::stoi(line[0]));
-            sName = line[1];
-            auto startTimestamp = static_cast<time_t>(std::stoi(line[2]));
-            auto endTimestamp = static_cast<time_t>(std::stoi(line[3]));
-            time_t currentTime = time(nullptr);
-            if (currentTime > endTimestamp)
-                state = Stopped;
-            timers.emplace_back(std::make_shared<timer>(sName, state, startTimestamp, endTimestamp, this));
-
-            line.clear();
-            lineStream.clear();
-        }
-    }
-    file.close();
-    int i = 0;
-    for (auto &timer: timers) {
-        selectedTimer = timer;
-        view->timerList().Append(timer->getName());
-        view->timerList().SetSelection(i++);
-        if (timer->isRunning())
-            startSelectedTimer();
-    }
-    if (!timers.empty()) {
-        view->timerList().Select(0);
-        selectedTimer = timers[0];
-    }
 }
 
 void controller::updateSpinCtrlValues() {
@@ -236,16 +255,21 @@ void controller::updateSpinCtrlValues() {
             label->Show(true);
     }
 
-    int duration = selectedTimer->getDuration();
-    int years = std::floor(static_cast<float>(duration) / 31'556'952.f);
-    int weeks = std::floor((duration - (years * 31'556'952)) / 604'800);
-    int days = std::floor((duration - (years * 31'556'952) - (weeks * 604'800)) / 86'400);
-    int hours = std::floor((duration - (years * 31'556'952) - (weeks * 604'800) - (days * 86'400)) / 3600);
-    int minutes = std::floor(
-            (duration - (years * 31'556'952) - (weeks * 604'800) - (days * 86'400) - (hours * 3600)) / 60);
-    int seconds =
-            duration - (years * 31'556'952) - (weeks * 604'800) - (days * 86'400) - (hours * 3600) - (minutes * 60);
-    std::vector<int> newParameters;
+    auto duration = static_cast<float>(selectedTimer->getDuration());
+    float years = std::floor(static_cast<float>(duration) / secondsQuantities[0]);
+    float weeks = std::floor((duration - (years * secondsQuantities[0])) / secondsQuantities[1]);
+    float days = std::floor(
+            (duration - (years * secondsQuantities[0]) - (weeks * secondsQuantities[1])) / secondsQuantities[2]);
+    float hours = std::floor((duration - (years * secondsQuantities[0]) - (weeks * secondsQuantities[1]) -
+                              (days * secondsQuantities[2])) / secondsQuantities[3]);
+    float minutes = std::floor(
+            (duration - (years * secondsQuantities[0]) - (weeks * secondsQuantities[1]) -
+             (days * secondsQuantities[2]) - (hours * secondsQuantities[3])) / secondsQuantities[4]);
+    float seconds = std::floor(
+            duration - (years * secondsQuantities[0]) - (weeks * secondsQuantities[1]) - (days * secondsQuantities[2]) -
+            (hours * secondsQuantities[3]) - (minutes * secondsQuantities[4]));
+
+    std::vector<float> newParameters;
     newParameters.push_back(years);
     newParameters.push_back(weeks);
     newParameters.push_back(days);
@@ -253,7 +277,7 @@ void controller::updateSpinCtrlValues() {
     newParameters.push_back(minutes);
     newParameters.push_back(seconds);
     for (int i = 0; i < view->timeControls().size(); i++) {
-        view->timeControls()[i]->SetValue(newParameters[i]);
+        view->timeControls()[i]->SetValue(static_cast<int>(newParameters[i]));
     }
 }
 
@@ -261,15 +285,22 @@ void controller::updateNameField() {
     if (!timers.empty()) {
         view->name().SetLabel(wxString(selectedTimer->getName()));
     } else {
-        view->name().SetLabel("");
+        view->name().SetLabel(wxString(""));
     }
 }
 
-void controller::waitForTimerStop(const std::shared_ptr<timer> &timer) {
-    if (timer->isRunning()) {
-        timer->requestStop();
-        while (timer->isRunning()) {
+const std::string &controller::getTimerFormat() const {
+    return timerFormat;
+}
 
-        }
-    }
+const std::string &controller::getDateFormat() const {
+    return dateFormat;
+}
+
+void controller::changeTimerFormat(const std::string &newFormat) {
+    this->timerFormat = newFormat;
+}
+
+void controller::changeDateFormat(const std::string &newFormat) {
+    this->dateFormat = newFormat;
 }

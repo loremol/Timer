@@ -1,42 +1,53 @@
-#include "Timer.h"
-#include "App.h"
 #include <cmath>
 #include <utility>
-#include <ctime>
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include <fstream>
+#include <iomanip>
+#include "Timer.h"
+#include "App.h"
 
 wxDECLARE_APP(app);
 
+using namespace std::chrono;
+
 timer::timer(std::string name, int duration, observer *controller)
-        : name(std::move(name)), duration(duration), remaining(duration),
+        : name(std::move(name)), timerDuration(duration * 1000), remainingTime(timerDuration),
           state(Stopped), controller(controller) {
+    checkConstructorParameters();
     calcStartEndDates();
 }
 
-timer::timer(std::string name, const bool &state, const time_t &startTimestamp, const time_t &endTimeStamp,
-             observer *controller) : name(std::move(name)), state(state), controller(controller) {
-    startDate = date(*localtime(&startTimestamp));
-    endDate = date(*localtime(&endTimeStamp));
-    duration = endTimeStamp - startTimestamp;
+timer::timer(std::string name, const bool &state,
+             const time_point<system_clock, milliseconds> &startPoint,
+             const time_point<system_clock, milliseconds> &endPoint,
+             observer *controller) : name(std::move(name)), state(state), controller(controller),
+                                     startDate(startPoint),
+                                     endDate(endPoint) {
+    checkConstructorParameters();
+    timerDuration = endDate.getPoint() - startDate.getPoint();
     if (isRunning()) {
-        time_t currentTime = time(nullptr);
-        remaining = endTimeStamp - currentTime;
+        auto now = system_clock::now();
+        remainingTime = endDate.getPoint() - time_point_cast<milliseconds>(now);
+        if (remainingTime < milliseconds(0)) {
+            remainingTime = milliseconds(0);
+            this->state = Stopped;
+        }
     } else {
-        remaining = duration;
+        remainingTime = timerDuration;
     }
 }
 
-void timer::calcStartEndDates() {
-    time_t localTime = time(nullptr);
-    tm *currentTime = localtime(&localTime);
-    startDate = date(*currentTime);
+void timer::checkConstructorParameters() {
+    auto now = time_point_cast<seconds>(system_clock::now()).time_since_epoch().count();
+    if (state == Running && endDate.getSecondsFromEpoch() <= now) state = Stopped;
+}
 
-    time_t endTime = time(nullptr) + duration;
-    tm *timerEndTime = localtime(&endTime);
-    endDate = date(*timerEndTime);
+void timer::calcStartEndDates() {
+    auto nowMs = time_point_cast<milliseconds>(system_clock::now());
+    startDate = date(nowMs);
+    auto durationInMs = milliseconds{timerDuration};
+    endDate = date(nowMs + durationInMs);
 }
 
 void timer::start() {
@@ -44,16 +55,16 @@ void timer::start() {
         calcStartEndDates();
     }
     state = Running;
-    controller->updateControls();
-    using namespace std::chrono;
-    auto end = endDate.getTimestamp();
-    auto lastUpdate = round<seconds>(system_clock::now());
+    wxGetApp().CallAfter([this]() {
+        controller->updateControls();
+        controller->updateTimerDates();
+    });
+    auto end = endDate.getPoint();
+    auto lastUpdate = time_point_cast<milliseconds>(system_clock::now());
     while (lastUpdate < end) {
         if (stopRequested) break;
-        lastUpdate = round<seconds>(system_clock::now());
-        auto lastUpdateT = system_clock::to_time_t(lastUpdate);
-        auto endT = system_clock::to_time_t(end);
-        remaining = endT - lastUpdateT;
+        lastUpdate = time_point_cast<milliseconds>(system_clock::now());
+        remainingTime = end - lastUpdate;
         updateWhileRunning();
         std::this_thread::sleep_for(milliseconds(25));
     }
@@ -63,20 +74,21 @@ void timer::start() {
 void timer::stop() {
     stopRequested = false;
     state = Stopped;
-    remaining = duration;
+    remainingTime = timerDuration;
     updateWhenFinished();
 }
 
 void timer::requestStop() {
-    if (isRunning())
+    if (isRunning()) {
+        finishedStopping = false;
         stopRequested = true;
+    }
 }
 
 void timer::updateWhileRunning() {
     if (controller != nullptr)
         wxGetApp().CallAfter([this]() {
             controller->updateRemainingTime();
-            controller->updateTimerDates();
             controller->layoutView();
         });
 }
@@ -90,12 +102,8 @@ void timer::updateWhenFinished() {
             controller->layoutView();
         });
         controller->eraseTimerThread(std::this_thread::get_id());
+        finishedStopping = true;
     }
-}
-
-void timer::saveToFile(std::ofstream &file) {
-    file << state << "\t" << name << "\t";
-    file << startDate.getUnixTimestamp() << "\t" << endDate.getUnixTimestamp() << std::endl;
 }
 
 void timer::setName(const std::string &s) {
@@ -103,33 +111,89 @@ void timer::setName(const std::string &s) {
 }
 
 void timer::setDuration(int newDuration) {
-    duration = newDuration;
+    timerDuration = duration_cast<milliseconds>(static_cast<seconds>(newDuration));
     if (state == Stopped)
-        remaining = newDuration;
+        remainingTime = timerDuration;
+    calcStartEndDates();
 }
 
-std::string timer::getRemainingString(const std::string &format) const {
-    std::string s;
-    const auto f = [&format, &s](int totalSeconds) {
-        if (format == "HH:MM:SS") {
-            int hours = std::floor(static_cast<float>(totalSeconds) / 3600);
-            int minutes = std::floor((totalSeconds - (hours * 3600)) / 60);
-            int seconds = totalSeconds - (hours * 3600) - (minutes * 60);
+std::string timer::formatRemainingTime(std::string format) {
+    using namespace std;
+    using namespace std::chrono;
+    auto remaining = remainingTime;
+    long yc{0}, monc{0}, wc{0}, dc{0}, hc{0}, mc{0}, sc{0};
 
-            s += date::addZeroIfNeeded(hours) + ":";
-            s += date::addZeroIfNeeded(minutes) + ":";
-            s += date::addZeroIfNeeded(seconds);
-        } else {
-            s = "Format not supported.";
-        }
-    };
+    auto yearsIndex = format.find("%y");
+    if(yearsIndex != string::npos) {
+        auto y = duration_cast<duration<long, std::ratio<31536000>>>(remaining);
+        remaining-=y;
+        yc = y.count();
+        auto before = format.substr(0,yearsIndex);
+        auto after = format.substr(yearsIndex+2);
+        format = before + to_string(yc) + "y" + after;
+    }
 
-    if (!isRunning())
-        f(static_cast<int>(duration));
-    else
-        f(static_cast<int>(remaining));
+    auto monthIndex = format.find("%m");
+    if(monthIndex != string::npos) {
+        auto mon = duration_cast<months>(remaining);
+        remaining-=mon;
+        monc = mon.count();
+        auto before = format.substr(0,monthIndex);
+        auto after = format.substr(monthIndex+2);
+        format = before + to_string(monc) + "mon" + after;
+    }
 
-    return s;
+    auto weeksIndex = format.find("%w");
+    if(weeksIndex != string::npos) {
+        auto w = duration_cast<weeks>(remaining);
+        remaining-=w;
+        wc = w.count();
+        auto before = format.substr(0,weeksIndex);
+        auto after = format.substr(weeksIndex+2);
+        format = before + to_string(wc) + "w" + after;
+    }
+
+    auto daysIndex = format.find("%d");
+    if(daysIndex != string::npos){
+        auto d = duration_cast<days>(remaining);
+        remaining -= d;
+        dc = d.count();
+        auto before = format.substr(0,daysIndex);
+        auto after = format.substr(daysIndex+2);
+        format = before + to_string(dc) + "d" + after;
+    }
+
+    auto hoursIndex = format.find("%H");
+    if(hoursIndex != string::npos) {
+        auto h = duration_cast<hours>(remaining);
+        remaining -= h;
+        hc = h.count();
+        auto before = format.substr(0,hoursIndex);
+        auto after = format.substr(hoursIndex+2);
+        format = before + to_string(hc) + "h" + after;
+    }
+
+    auto minutesIndex = format.find("%M");
+    if(minutesIndex != string::npos) {
+        auto min = duration_cast<minutes>(remaining);
+        remaining -= min;
+        mc = min.count();
+        auto before = format.substr(0,minutesIndex);
+        auto after = format.substr(minutesIndex+2);
+        format = before + to_string(mc) + "m" + after;
+    }
+
+    auto secondsIndex = format.find("%S");
+    if(secondsIndex != string::npos) {
+        auto s = duration_cast<seconds>(remaining);
+        remaining -=s;
+        sc = s.count();
+        auto before = format.substr(0,secondsIndex);
+        auto after = format.substr(secondsIndex+2);
+        format = before + to_string(sc) + "s" + after;
+    }
+
+    return format;
 }
 
 date &timer::getStartDate() {
@@ -144,11 +208,14 @@ const std::string &timer::getName() const {
     return name;
 }
 
-int timer::getDuration() const {
-    return static_cast<int>(duration);
+long timer::getDuration() const {
+    return static_cast<int>(duration_cast<seconds>(timerDuration).count());
 }
 
 bool timer::isRunning() const {
     return state;
 }
 
+bool timer::hasFinished() const {
+    return finishedStopping;
+}

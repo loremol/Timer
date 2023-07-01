@@ -3,14 +3,43 @@
 
 #include <string>
 #include <wx/wx.h>
+#include "Observer.h"
+
+enum optionsEventId {
+    TimerFormat = wxID_HIGHEST + 1000,
+    DateFormat,
+    DateFormatInfo,
+    TimerFormatInfo
+};
 
 class optionsFrame : public wxDialog {
 public:
-    explicit optionsFrame(const std::string &title);
+    explicit optionsFrame(const std::string &title, observer *observer);
 
 private:
-    wxPanel *mainPanel{};
+    void allocateUiMemory();
 
+    void showMemoryError(const bool &critical);
+
+    void setupUi();
+
+    void onTimerFormatChange(wxCommandEvent &event);
+
+    void onDateFormatChange(wxCommandEvent &event);
+
+    void onDateFormatInfo(wxCommandEvent &event);
+
+    void onTimerFormatInfo(wxCommandEvent &event);
+
+    observer *controller;
+    std::vector<wxObject*> elements;
+    wxPanel *mainPanel{};
+    wxBoxSizer *column{}, *timerFormatRow{}, *dateFormatRow{};
+    wxStaticText *timerFormatPrompt{}, *dateFormatPrompt{};
+    wxTextCtrl *timerFormat{}, *dateFormat{};
+    wxBitmapButton *dateFormatInfo{}, *timerFormatInfo{};
+
+wxDECLARE_EVENT_TABLE();
 };
 
 

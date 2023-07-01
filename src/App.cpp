@@ -1,9 +1,8 @@
 #include "App.h"
-#include "Controller.h"
 
 bool app::OnInit() {
     try {
-        auto *c = new controller();
+        c = new controller();
         return true;
     } catch (const std::bad_alloc &e) {
         std::cout << e.what() << std::endl;
@@ -11,4 +10,6 @@ bool app::OnInit() {
     }
 }
 
-IMPLEMENT_APP(app)
+int app::OnExit() {
+    return 0;
+}

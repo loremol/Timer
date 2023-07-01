@@ -35,8 +35,18 @@ public:
 
     void updateSelectedTimerDuration() override;
 
+    void changeDateFormat(const std::string &newFormat) override;
+
+    void changeTimerFormat(const std::string &newFormat) override;
+
+    [[nodiscard]] const std::string &getTimerFormat() const override;
+
+    [[nodiscard]] const std::string &getDateFormat() const override;
+
 private:
     void loadTimers();
+
+    void saveTimers();
 
     void updateSpinCtrlValues();
 
@@ -48,6 +58,8 @@ private:
     std::map<int, std::thread> threads{};
     frame *view;
     std::shared_ptr<timer> selectedTimer = nullptr;
+    std::string timerFormat{"%M:%S"};
+    std::string dateFormat{"%H:%M:%S, %d/%m/%Y"};
 };
 
 

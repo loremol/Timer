@@ -2,7 +2,6 @@
 #define TIMER_TIMER_H
 
 #include "Date.h"
-#include "Observer.h"
 #include "OptionsFrame.h"
 
 #include <string>
@@ -18,7 +17,9 @@ class timer {
 public:
     explicit timer(std::string name, int duration, observer *controller);
 
-    explicit timer(std::string name, const bool &state, const time_t &startTimestamp, const time_t &endTimeStamp,
+    explicit timer(std::string name, const bool &state,
+                   const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &startPoint,
+                   const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &endPoint,
                    observer *controller);
 
     void start();
@@ -29,33 +30,37 @@ public:
 
     void updateWhenFinished();
 
-    void saveToFile(std::ofstream &file);
-
     void setName(const std::string &s);
 
     void setDuration(int newDuration);
 
     [[nodiscard]] bool isRunning() const;
 
-    [[nodiscard]] int getDuration() const;
+    [[nodiscard]] long getDuration() const;
 
     [[nodiscard]] const std::string &getName() const;
 
-    [[nodiscard]] std::string getRemainingString(const std::string &format) const;
+    [[nodiscard]] std::string formatRemainingTime(std::string format);
 
     [[nodiscard]] date &getStartDate();
 
     [[nodiscard]] date &getEndDate();
+
+    [[nodiscard]] bool hasFinished() const;
+
 private:
     void stop();
 
     void calcStartEndDates();
 
+    void checkConstructorParameters();
+
     observer *controller;
     std::string name;
-    time_t duration, remaining;
-    date startDate{}, endDate{};
-    std::atomic<bool> state;
+
+    std::chrono::milliseconds timerDuration{0}, remainingTime{0};
+    date startDate, endDate;
+    bool state, finishedStopping{false};
     std::atomic<bool> stopRequested = false;
 };
 

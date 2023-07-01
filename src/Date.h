@@ -9,10 +9,7 @@ class date {
 public:
     date() = default;
 
-    explicit date(const tm &time);
-
-    date(const int &year, const int &month, const int &day, const int &hour = 0, const int &minute = 0,
-         const int &second = 0);
+    explicit date(const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &timePoint);
 
     [[nodiscard]] int getYear() const;
 
@@ -26,18 +23,17 @@ public:
 
     [[nodiscard]] int getSecond() const;
 
-    [[nodiscard]] time_t getUnixTimestamp();
+    [[nodiscard]] long getSecondsFromEpoch();
 
-    std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<int64_t, std::ratio<1, 1>>> getTimestamp();
+    std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> getPoint();
 
-    [[nodiscard]] std::string getFormatted() const;
+    [[nodiscard]] std::string formatDate(const std::string &format) const;
 
-    static std::string addZeroIfNeeded(const int &value);
+    static std::string addZeroIfNeeded(const long &value);
 
 private:
     tm timeStruct{};
-    std::string monthStrings[12] = {"January", "February", "March", "April", "May", "June", "July", "August",
-                                    "September", "October", "November", "December"};
+    std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> point;
 };
 
 

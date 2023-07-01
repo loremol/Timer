@@ -10,15 +10,13 @@
 #include <wx/spinctrl.h>
 #include <list>
 #include "Timer.h"
-#include "App.h"
 #include "Observer.h"
 
 enum eventId {
-    MenuEditOptions,
+    MenuEditOptions = wxID_HIGHEST + 1,
     ListBox,
     StartButton,
     StopButton,
-    NewButton,
     DeleteButton,
     RenameButton,
     NameField,
@@ -27,7 +25,7 @@ enum eventId {
 
 class frame : public wxFrame {
 public:
-    frame(const std::string &title, observer &controller);
+    frame(const std::string &title, observer *controller);
 
     void showMemoryError(const bool &critical);
 
@@ -59,6 +57,10 @@ public:
         return *endDateText;
     }
 
+    [[nodiscard]] wxPanel *panel() const {
+        return mainPanel;
+    }
+
     wxPanel *mainPanel{};
     wxBitmapButton *newBitmapButton{}, *deleteBitmapButton{}, *renameBitmapButton{};
     wxButton *startButton{}, *stopButton{};
@@ -86,9 +88,9 @@ private:
 
     void onTimeParameterChange(wxSpinEvent &event);
 
-    void onNewSelection(wxCommandEvent &event);
+    void onTimerSelection(wxCommandEvent &);
 
-    observer &controller;
+    observer *controller;
     wxMenuBar *menuBar{};
     wxMenu *fileMenu{}, *editMenu{};
     wxBoxSizer *columns{}, *leftColumn{}, *rightColumn{}, *timerManagementButtons{}, *timerNameSizer{}, *remainingTimeSizer{}, *parameters{}, *timerStartStop{};

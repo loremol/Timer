@@ -32,6 +32,15 @@ public:
     virtual void updateRemainingTime() = 0;
 
     virtual void updateTimerDates() = 0;
+
+    virtual void changeTimerFormat(const std::string &newFormat) = 0;
+
+    virtual void changeDateFormat(const std::string &format) = 0;
+
+    [[nodiscard]] virtual const std::string &getTimerFormat() const = 0;
+
+    [[nodiscard]] virtual const std::string &getDateFormat() const = 0;
+
 };
 
 #endif //TIMER_OBSERVER_H
