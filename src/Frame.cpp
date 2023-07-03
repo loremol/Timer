@@ -15,6 +15,8 @@ wxBEGIN_EVENT_TABLE(frame, wxFrame)
                 EVT_BUTTON(RenameButton, frame::onRename)
                 EVT_LISTBOX(ListBox, frame::onTimerSelection)
                 EVT_SPINCTRL(SpinCtrlId, frame::onTimeParameterChange)
+                EVT_COMMAND(timerEventId::OnTimerStart, wxEVT_COMMAND_TEXT_UPDATED, frame::onTimerStart)
+                EVT_COMMAND(timerEventId::OnTimerTick, wxEVT_COMMAND_TEXT_UPDATED, frame::onTimerTick)
                 EVT_CLOSE(frame::onCloseWindow)
 wxEND_EVENT_TABLE()
 
@@ -88,111 +90,83 @@ void frame::allocateUiMemory() {
         startDateText = new wxStaticText(mainPanel, wxID_ANY, wxString(""));
         endDateText = new wxStaticText(mainPanel, wxID_ANY, wxString(""));
     } catch (const std::bad_alloc &e) {
-        showMemoryError(true);
+        showMemoryError();
+        std::cerr << e.what() << std::endl;
     } catch (const std::exception &e) {
-        std::cerr << e.what() << "mannaggia" << std::endl;
+        std::cerr << e.what() << std::endl;
     }
 }
 
 void frame::setupUi() {
-    if (menuBar != nullptr && fileMenu != nullptr && editMenu != nullptr) {
-        menuBar->Append(fileMenu, _T("&File"));
-        menuBar->Append(editMenu, _T("&Edit"));
-        fileMenu->Append(wxID_EXIT, _T("&Quit"));
-        editMenu->Append(MenuEditOptions, _T("&Options"));
-    }
+    menuBar->Append(fileMenu, _T("&File"));
+    menuBar->Append(editMenu, _T("&Edit"));
+    fileMenu->Append(wxID_EXIT, _T("&Quit"));
+    editMenu->Append(MenuEditOptions, _T("&Options"));
 
-    if (columns != nullptr && leftColumn != nullptr && rightColumn != nullptr) {
-        columns->Add(leftColumn, wxSizerFlags().Border(wxLEFT, 25));
-        columns->Add(rightColumn, wxSizerFlags().Border(wxLEFT, 30));
-    }
+    columns->Add(leftColumn, wxSizerFlags().Border(wxLEFT, 25));
+    columns->Add(rightColumn, wxSizerFlags().Border(wxLEFT, 30));
 
-    if (timerListStaticText != nullptr && timerListBox != nullptr && timerManagementButtons != nullptr) {
-        leftColumn->AddSpacer(10);
-        leftColumn->Add(timerListStaticText, wxSizerFlags().Center());
-        leftColumn->Add(timerListBox, wxSizerFlags().Border(wxUP, 5));
-        leftColumn->Add(timerManagementButtons, wxSizerFlags().Center().Border(wxUP, 7));
-    }
+    leftColumn->AddSpacer(10);
+    leftColumn->Add(timerListStaticText, wxSizerFlags().Center());
+    leftColumn->Add(timerListBox, wxSizerFlags().Border(wxUP, 5));
+    leftColumn->Add(timerManagementButtons, wxSizerFlags().Center().Border(wxUP, 7));
 
-    if (newBitmapButton != nullptr && deleteBitmapButton != nullptr && renameBitmapButton != nullptr) {
-        timerManagementButtons->Add(newBitmapButton, wxSizerFlags().Center());
-        timerManagementButtons->Add(deleteBitmapButton, wxSizerFlags().Center().Border(wxLEFT, 7));
-        timerManagementButtons->Add(renameBitmapButton, wxSizerFlags().Center().Border(wxLEFT, 7));
-    }
+    timerManagementButtons->Add(newBitmapButton, wxSizerFlags().Center());
+    timerManagementButtons->Add(deleteBitmapButton, wxSizerFlags().Center().Border(wxLEFT, 7));
+    timerManagementButtons->Add(renameBitmapButton, wxSizerFlags().Center().Border(wxLEFT, 7));
 
-    if (timerNameSizer != nullptr && remainingTimeSizer != nullptr && parameters != nullptr &&
-        timerStartStop != nullptr) {
-        rightColumn->AddSpacer(10);
-        rightColumn->Add(timerNameSizer, wxSizerFlags().Center());
-        rightColumn->Add(remainingTimeSizer, wxSizerFlags().Border(wxUP, 5).Center());
-        rightColumn->Add(parameters, wxSizerFlags().Border(wxUP, 5).Center());
-        rightColumn->Add(timerStartStop, wxSizerFlags().Border(wxUP, 15).Center());
-    }
+    rightColumn->AddSpacer(10);
+    rightColumn->Add(timerNameSizer, wxSizerFlags().Center());
+    rightColumn->Add(remainingTimeSizer, wxSizerFlags().Border(wxUP, 5).Center());
+    rightColumn->Add(parameters, wxSizerFlags().Border(wxUP, 5).Center());
+    rightColumn->Add(timerStartStop, wxSizerFlags().Border(wxUP, 15).Center());
 
-    if (yearsHoursParameters != nullptr && weeksMinutesParameters != nullptr && daysSecondsParameters != nullptr &&
-        hourPar != nullptr && minutePar != nullptr && secondPar != nullptr) {
-        parameters->Add(yearsHoursParameters, wxSizerFlags().Center());
-        parameters->Add(weeksMinutesParameters, wxSizerFlags().Border(wxLEFT, 5).Center());
-        parameters->Add(daysSecondsParameters, wxSizerFlags().Border(wxLEFT, 5).Center());
-        parameters->Add(hourPar, wxSizerFlags().Border(wxLEFT, 5).Center());
-        parameters->Add(minutePar, wxSizerFlags().Border(wxLEFT, 5).Center());
-        parameters->Add(secondPar, wxSizerFlags().Border(wxLEFT, 5).Center());
-    }
+    parameters->Add(yearsHoursParameters, wxSizerFlags().Center());
+    parameters->Add(weeksMinutesParameters, wxSizerFlags().Border(wxLEFT, 5).Center());
+    parameters->Add(daysSecondsParameters, wxSizerFlags().Border(wxLEFT, 5).Center());
+    parameters->Add(hourPar, wxSizerFlags().Border(wxLEFT, 5).Center());
+    parameters->Add(minutePar, wxSizerFlags().Border(wxLEFT, 5).Center());
+    parameters->Add(secondPar, wxSizerFlags().Border(wxLEFT, 5).Center());
 
-    if (timerNameField != nullptr) {
-        timerNameSizer->Add(timerNameField, wxSizerFlags().Center());
-        timerNameField->SetFont(wxFont(20, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-    }
+    timerNameSizer->Add(timerNameField, wxSizerFlags().Center());
+    timerNameField->SetFont(wxFont(20, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
 
-    if (remainingTimeStaticText != nullptr) {
-        remainingTimeSizer->AddStretchSpacer();
-        remainingTimeSizer->Add(remainingTimeStaticText, wxSizerFlags(wxALIGN_CENTER).Border(wxUP, 10));
-        remainingTimeSizer->AddStretchSpacer();
-        remainingTimeStaticText->SetFont(wxFont(25, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
-    }
+    remainingTimeSizer->AddStretchSpacer();
+    remainingTimeSizer->Add(remainingTimeStaticText, wxSizerFlags(wxALIGN_CENTER).Border(wxUP, 10));
+    remainingTimeSizer->AddStretchSpacer();
+    remainingTimeStaticText->SetFont(wxFont(25, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
 
-    if (yearsLabel != nullptr && yearsSpinCtrl != nullptr && hoursLabel != nullptr && hoursSpinCtrl != nullptr) {
-        yearsHoursParameters->Add(yearsLabel, wxSizerFlags().Center());
-        yearsHoursParameters->Add(yearsSpinCtrl);
-        yearsHoursParameters->Add(hoursLabel, wxSizerFlags().Border(wxUP, 5).Center());
-        yearsHoursParameters->Add(hoursSpinCtrl);
-    }
+    yearsHoursParameters->Add(yearsLabel, wxSizerFlags().Center());
+    yearsHoursParameters->Add(yearsSpinCtrl);
+    yearsHoursParameters->Add(hoursLabel, wxSizerFlags().Border(wxUP, 5).Center());
+    yearsHoursParameters->Add(hoursSpinCtrl);
 
-    if (weeksLabel != nullptr && weeksSpinCtrl != nullptr && minutesLabel != nullptr && minutesSpinCtrl != nullptr) {
-        weeksMinutesParameters->Add(weeksLabel, wxSizerFlags().Center());
-        weeksMinutesParameters->Add(weeksSpinCtrl);
-        weeksMinutesParameters->Add(minutesLabel, wxSizerFlags().Border(wxUP, 5).Center());
-        weeksMinutesParameters->Add(minutesSpinCtrl);
-    }
+    weeksMinutesParameters->Add(weeksLabel, wxSizerFlags().Center());
+    weeksMinutesParameters->Add(weeksSpinCtrl);
+    weeksMinutesParameters->Add(minutesLabel, wxSizerFlags().Border(wxUP, 5).Center());
+    weeksMinutesParameters->Add(minutesSpinCtrl);
 
-    if (daysLabel != nullptr && daysSpinCtrl != nullptr && secondsLabel != nullptr && secondsSpinCtrl != nullptr) {
-        daysSecondsParameters->Add(daysLabel, wxSizerFlags().Center());
-        daysSecondsParameters->Add(daysSpinCtrl);
-        daysSecondsParameters->Add(secondsLabel, wxSizerFlags().Border(wxUP, 5).Center());
-        daysSecondsParameters->Add(secondsSpinCtrl);
-    }
+    daysSecondsParameters->Add(daysLabel, wxSizerFlags().Center());
+    daysSecondsParameters->Add(daysSpinCtrl);
+    daysSecondsParameters->Add(secondsLabel, wxSizerFlags().Border(wxUP, 5).Center());
+    daysSecondsParameters->Add(secondsSpinCtrl);
 
-    if (startButton != nullptr && stopButton != nullptr) {
-        timerStartStop->Add(startButton, wxSizerFlags(wxALIGN_CENTER));
-        timerStartStop->Add(stopButton, wxSizerFlags(wxALIGN_CENTER).Border(wxLEFT, 10));
-    }
+    timerStartStop->Add(startButton, wxSizerFlags(wxALIGN_CENTER));
+    timerStartStop->Add(stopButton, wxSizerFlags(wxALIGN_CENTER).Border(wxLEFT, 10));
 
-    if (startDateText != nullptr && endDateText != nullptr) {
-        rightColumn->Add(startDateText, wxSizerFlags().Border(wxUP, 15));
-        rightColumn->Add(endDateText, wxSizerFlags().Border(wxUP, 10));
-    }
+    rightColumn->Add(startDateText, wxSizerFlags().Border(wxUP, 15));
+    rightColumn->Add(endDateText, wxSizerFlags().Border(wxUP, 10));
 
     SetMenuBar(menuBar);
     mainPanel->SetSizerAndFit(columns);
 }
 
-void frame::showMemoryError(const bool &critical) {
+void frame::showMemoryError() {
     wxMessageDialog sd = wxMessageDialog(this,
                                          wxString("Failed to allocate memory for new elements. Exiting the program."),
                                          "Memory error occurred", wxOK);
     sd.ShowModal();
-    if (critical)
-        exit(0);
+    sd.Destroy();
 }
 
 void frame::onCloseWindow(wxCloseEvent &WXUNUSED(event)) {
@@ -240,4 +214,14 @@ void frame::onStop(wxCommandEvent &WXUNUSED(event)) {
 
 void frame::onTimeParameterChange(wxSpinEvent &WXUNUSED(event)) {
     controller->updateSelectedTimerDuration();
+}
+
+void frame::onTimerStart(wxCommandEvent &WXUNUSED(event)) {
+    controller->updateControls();
+    controller->updateTimerDates();
+}
+
+void frame::onTimerTick(wxCommandEvent &WXUNUSED(event)) {
+    controller->updateRemainingTime();
+    controller->layoutView();
 }

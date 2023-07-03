@@ -37,6 +37,8 @@ public:
 
     virtual void changeDateFormat(const std::string &format) = 0;
 
+    [[nodiscard]] virtual wxFrame *getView() const = 0;
+
     [[nodiscard]] virtual const std::string &getTimerFormat() const = 0;
 
     [[nodiscard]] virtual const std::string &getDateFormat() const = 0;

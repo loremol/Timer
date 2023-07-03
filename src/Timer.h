@@ -1,34 +1,37 @@
 #ifndef TIMER_TIMER_H
 #define TIMER_TIMER_H
 
-#include "Date.h"
-#include "OptionsFrame.h"
-
 #include <string>
 #include <atomic>
 #include <functional>
+#include "Date.h"
+#include "OptionsFrame.h"
+#include "Observer.h"
 
 enum state {
     Stopped,
     Running
 };
 
+enum timerEventId {
+    OnTimerStart = 20000,
+    OnTimerTick
+};
+
 class timer {
 public:
-    explicit timer(std::string name, int duration, observer *controller);
+    timer(std::string name, int duration, observer *controller);
 
-    explicit timer(std::string name, const bool &state,
-                   const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &startPoint,
-                   const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &endPoint,
-                   observer *controller);
+    timer(std::string name, const bool &state,
+          const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &startPoint,
+          const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &endPoint,
+          observer *controller);
 
     void start();
 
     void requestStop();
 
     void updateWhileRunning();
-
-    void updateWhenFinished();
 
     void setName(const std::string &s);
 

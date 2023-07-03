@@ -2,14 +2,10 @@
 
 bool app::OnInit() {
     try {
-        c = new controller();
+        c = std::make_shared<controller>();
         return true;
     } catch (const std::bad_alloc &e) {
         std::cout << e.what() << std::endl;
         return false;
     }
-}
-
-int app::OnExit() {
-    return 0;
 }

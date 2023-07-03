@@ -7,9 +7,12 @@
 
 class date {
 public:
-    explicit date(const int &year = 1970, const int &month = 1, const int &day = 1, const int &hour = 0, const int &minute = 0, const int &second = 0);
+    explicit date(const int &year = 1970, const int &month = 1, const int &day = 1, const int &hour = 0,
+                  const int &minute = 0, const int &second = 0);
 
     explicit date(const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &timePoint);
+
+    static std::string addZeroIfNeeded(const long &value);
 
     [[nodiscard]] int getYear() const;
 
@@ -25,11 +28,9 @@ public:
 
     [[nodiscard]] long getSecondsFromEpoch();
 
-    std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> getPoint();
+    [[nodiscard]] std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> getPoint();
 
-    [[nodiscard]] std::string formatDate(std::string format) const;
-
-    static std::string addZeroIfNeeded(const long &value);
+    [[nodiscard]] std::string format(std::string format) const;
 
 private:
     tm timeStruct{};

@@ -19,8 +19,6 @@ public:
 private:
     void allocateUiMemory();
 
-    void showMemoryError(const bool &critical);
-
     void setupUi();
 
     void onTimerFormatChange(wxCommandEvent &event);
@@ -32,7 +30,6 @@ private:
     void onTimerFormatInfo(wxCommandEvent &event);
 
     observer *controller;
-    std::vector<wxObject *> elements;
     wxPanel *mainPanel{};
     wxBoxSizer *column{}, *timerFormatRow{}, *dateFormatRow{};
     wxStaticText *timerFormatPrompt{}, *dateFormatPrompt{};

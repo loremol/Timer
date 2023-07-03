@@ -1,3 +1,4 @@
+#include <numeric>
 #include "Controller.h"
 
 float secondsQuantities[6] = {31536000.f, 604800.f, 86400.f, 3600.f, 60.f, 1.f};
@@ -31,7 +32,7 @@ void controller::createNewTimer() {
         view->timerList().Select(newIndex);
         updateTimerView();
     } catch (const std::bad_alloc &e) {
-        view->showMemoryError(false);
+        view->showMemoryError();
     }
 }
 
@@ -66,14 +67,15 @@ void controller::renameSelectedTimer() {
 }
 
 void controller::startSelectedTimer() {
-    int runningTimers = 0;
-    for (auto &timer: timers)
-        if (timer->isRunning()) runningTimers++;
+    auto runningTimers = std::count_if(timers.begin(), timers.end(), [](const std::shared_ptr<timer> &timer) -> bool {
+        return timer->isRunning();
+    });
+
     if (threads.size() > runningTimers) return;
 
-    const auto f = [this]() { selectedTimer->start(); };
     if (threads.find(view->timerList().GetSelection()) == threads.end()) {
-        threads.insert(std::pair<int, std::thread>(view->timerList().GetSelection(), std::thread{f}));
+        threads.insert(std::pair<int, std::thread>(view->timerList().GetSelection(),
+                                                   std::thread{&timer::start, selectedTimer}));
     }
     updateTimerDates();
 }
@@ -81,6 +83,10 @@ void controller::startSelectedTimer() {
 void controller::stopSelectedTimer() {
     if (!selectedTimer->isRunning()) return;
     waitForTimerStop(selectedTimer);
+    updateRemainingTime();
+    updateControls();
+    updateTimerDates();
+    layoutView();
 }
 
 void controller::waitForTimerStop(const std::shared_ptr<timer> &timer) {
@@ -120,10 +126,11 @@ void controller::loadTimers() {
     using namespace std::chrono;
     std::ifstream file{"timers.txt"};
     std::stringstream lineStream;
-    std::string lineString, buffer, sState, sName, sStartDate, sEndDate;
     std::vector<std::string> line;
     if (file.is_open()) {
+        std::string lineString;
         while (std::getline(file, lineString)) {
+            std::string buffer, sName;
             lineStream.str(lineString);
             while (std::getline(lineStream, buffer, '\t')) {
                 line.push_back(buffer);
@@ -140,7 +147,7 @@ void controller::loadTimers() {
     }
     file.close();
     int i = 0;
-    for (auto &timer: timers) {
+    for (auto const &timer: timers) {
         selectedTimer = timer;
         view->timerList().Append(timer->getName());
         view->timerList().SetSelection(i++);
@@ -240,9 +247,9 @@ void controller::updateRemainingTime() {
 
 void controller::updateTimerDates() {
     if (!timers.empty() && selectedTimer->isRunning()) {
-        view->startDate().SetLabel(wxString("Timer started: " + selectedTimer->getStartDate().formatDate(
+        view->startDate().SetLabel(wxString("Timer started: " + selectedTimer->getStartDate().format(
                 dateFormat)));
-        view->endDate().SetLabel(wxString("Timer will stop: " + selectedTimer->getEndDate().formatDate(
+        view->endDate().SetLabel(wxString("Timer will stop: " + selectedTimer->getEndDate().format(
                 dateFormat)));
     } else {
         view->startDate().SetLabel(wxString(""));
@@ -251,10 +258,12 @@ void controller::updateTimerDates() {
 }
 
 void controller::updateSelectedTimerDuration() {
-    int i = 0, total = 0;
-    for (auto &ctrl: view->timeControls()) {
-        total += ctrl->GetValue() * static_cast<int>(secondsQuantities[i++]);
-    }
+    int i = 0;
+    auto total = std::accumulate(view->timeControls().begin(), view->timeControls().end(), 0,
+                                 [&i](auto a, auto spinCtrl) -> int {
+                                     return a + spinCtrl->GetValue() * static_cast<int>(secondsQuantities[i++]);
+                                 });
+
     selectedTimer->setDuration(total);
     updateRemainingTime();
     layoutView();
@@ -305,7 +314,7 @@ void controller::updateSpinCtrlValues() {
 }
 
 void controller::updateNameField() {
-    if (!timers.empty()) {
+    if (!timers.empty() && selectedTimer != nullptr) {
         view->name().SetLabel(wxString(selectedTimer->getName()));
     } else {
         view->name().SetLabel(wxString(""));
@@ -326,4 +335,8 @@ void controller::changeTimerFormat(const std::string &newFormat) {
 
 void controller::changeDateFormat(const std::string &newFormat) {
     this->dateFormat = newFormat;
+}
+
+wxFrame *controller::getView() const {
+    return view;
 }

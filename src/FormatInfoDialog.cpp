@@ -5,6 +5,8 @@ formatInfoDialog::formatInfoDialog(const std::string &title, const std::string &
     mainPanel = new wxPanel(this);
     column = new wxBoxSizer(wxVERTICAL);
     formatList = new wxStaticText(mainPanel, wxID_ANY, wxString(info));
-    column->Add(formatList, wxSizerFlags().Border(wxLEFT | wxTOP, 10));
-    mainPanel->SetSizerAndFit(column);
+    if (mainPanel != nullptr && column != nullptr && formatList != nullptr) {
+        column->Add(formatList, wxSizerFlags().Border(wxLEFT | wxTOP, 10));
+        mainPanel->SetSizerAndFit(column);
+    }
 }

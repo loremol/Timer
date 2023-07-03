@@ -1,13 +1,8 @@
-#include <cmath>
 #include <utility>
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include <iomanip>
 #include "Timer.h"
-#include "App.h"
-
-wxDECLARE_APP(app);
 
 using namespace std::chrono;
 
@@ -51,14 +46,10 @@ void timer::calcStartEndDates() {
 }
 
 void timer::start() {
-    if (!isRunning()) {
-        calcStartEndDates();
-    }
+    if (!isRunning()) calcStartEndDates();
     state = Running;
-    wxGetApp().CallAfter([this]() {
-        controller->updateControls();
-        controller->updateTimerDates();
-    });
+    wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED, OnTimerStart);
+    controller->getView()->GetEventHandler()->AddPendingEvent(event);
     auto end = endDate.getPoint();
     auto lastUpdate = time_point_cast<milliseconds>(system_clock::now());
     while (lastUpdate < end) {
@@ -75,7 +66,9 @@ void timer::stop() {
     stopRequested = false;
     state = Stopped;
     remainingTime = timerDuration;
-    updateWhenFinished();
+    if (controller != nullptr)
+        controller->eraseTimerThread(std::this_thread::get_id());
+    finishedStopping = true;
 }
 
 void timer::requestStop() {
@@ -86,23 +79,9 @@ void timer::requestStop() {
 }
 
 void timer::updateWhileRunning() {
-    if (controller != nullptr)
-        wxGetApp().CallAfter([this]() {
-            controller->updateRemainingTime();
-            controller->layoutView();
-        });
-}
-
-void timer::updateWhenFinished() {
     if (controller != nullptr) {
-        wxGetApp().CallAfter([this]() {
-            controller->updateRemainingTime();
-            controller->updateControls();
-            controller->updateTimerDates();
-            controller->layoutView();
-        });
-        controller->eraseTimerThread(std::this_thread::get_id());
-        finishedStopping = true;
+        wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED, OnTimerTick);
+        controller->getView()->GetEventHandler()->AddPendingEvent(event);
     }
 }
 
@@ -121,63 +100,62 @@ std::string timer::formatRemainingTime(std::string format) {
     using namespace std;
     using namespace std::chrono;
     auto remaining = remainingTime;
-    long yearCount{0}, monthCount{0}, weekCount{0}, dayCount{0}, hourCount{0}, minuteCount{0}, secondCount{0};
 
     auto yearsIndex = format.find("%y");
     if (yearsIndex != string::npos) {
         auto inYears = duration_cast<duration<long, std::ratio<31536000>>>(remaining);
         remaining -= inYears;
-        yearCount = inYears.count();
+        auto yearCount = inYears.count();
         auto before = format.substr(0, yearsIndex);
         auto after = format.substr(yearsIndex + 2);
-        format = before + to_string(yearCount) + "inYears" + after;
+        format = before + to_string(yearCount) + "y" + after;
     }
 
     auto monthIndex = format.find("%m");
     if (monthIndex != string::npos) {
         auto inMonths = duration_cast<months>(remaining);
         remaining -= inMonths;
-        monthCount = inMonths.count();
+        auto monthCount = inMonths.count();
         auto before = format.substr(0, monthIndex);
         auto after = format.substr(monthIndex + 2);
-        format = before + to_string(monthCount) + "inMonths" + after;
+        format = before + to_string(monthCount) + "mo" + after;
     }
 
     auto weeksIndex = format.find("%w");
     if (weeksIndex != string::npos) {
         auto inWeeks = duration_cast<weeks>(remaining);
         remaining -= inWeeks;
-        weekCount = inWeeks.count();
+        auto weekCount = inWeeks.count();
         auto before = format.substr(0, weeksIndex);
         auto after = format.substr(weeksIndex + 2);
-        format = before + to_string(weekCount) + "inWeeks" + after;
+        format = before + to_string(weekCount) + "w" + after;
     }
 
     auto daysIndex = format.find("%d");
     if (daysIndex != string::npos) {
         auto inDays = duration_cast<days>(remaining);
         remaining -= inDays;
-        dayCount = inDays.count();
+        auto dayCount = inDays.count();
         auto before = format.substr(0, daysIndex);
         auto after = format.substr(daysIndex + 2);
-        format = before + to_string(dayCount) + "inDays" + after;
+        format = before + to_string(dayCount) + "d" + after;
     }
 
     auto hoursIndex = format.find("%H");
     if (hoursIndex != string::npos) {
         auto inHours = duration_cast<hours>(remaining);
         remaining -= inHours;
-        hourCount = inHours.count();
+        auto hourCount = inHours.count();
         auto before = format.substr(0, hoursIndex);
         auto after = format.substr(hoursIndex + 2);
-        format = before + to_string(hourCount) + "inHours" + after;
+        format = before + to_string(hourCount) + "h" + after;
     }
 
     auto minutesIndex = format.find("%M");
     if (minutesIndex != string::npos) {
         auto inMinutes = duration_cast<minutes>(remaining);
         remaining -= inMinutes;
-        minuteCount = inMinutes.count();
+        auto minuteCount = inMinutes.count();
         auto before = format.substr(0, minutesIndex);
         auto after = format.substr(minutesIndex + 2);
         format = before + to_string(minuteCount) + "m" + after;
@@ -186,11 +164,10 @@ std::string timer::formatRemainingTime(std::string format) {
     auto secondsIndex = format.find("%S");
     if (secondsIndex != string::npos) {
         auto inSeconds = duration_cast<seconds>(remaining);
-        remaining -= inSeconds;
-        secondCount = inSeconds.count();
+        auto secondCount = inSeconds.count();
         auto before = format.substr(0, secondsIndex);
         auto after = format.substr(secondsIndex + 2);
-        format = before + to_string(secondCount) + "inSeconds" + after;
+        format = before + to_string(secondCount) + "s" + after;
     }
 
     return format;

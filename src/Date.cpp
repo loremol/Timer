@@ -69,7 +69,7 @@ std::string date::addZeroIfNeeded(const long &value) {
     }
 }
 
-std::string date::formatDate(std::string format) const {
+std::string date::format(std::string format) const {
     using namespace std;
     auto hour = format.find("%H");
     if (hour != string::npos) {
@@ -82,7 +82,7 @@ std::string date::formatDate(std::string format) const {
 
         if (getHour() == 0)
             american = "12";
-        else if (getHour() > 12 && getHour() != 0)
+        else if (getHour() > 12)
             american = addZeroIfNeeded(getHour() - 12);
         else
             american = addZeroIfNeeded(getHour());

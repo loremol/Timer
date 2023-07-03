@@ -6,13 +6,9 @@
 
 class app : public wxApp {
 public:
-    ~app() override = default;
-
     bool OnInit() override;
 
-    int OnExit() override;
-
-    controller *c{};
+    std::shared_ptr<controller> c{};
 };
 
 wxDECLARE_APP(app);

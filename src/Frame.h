@@ -27,7 +27,7 @@ class frame : public wxFrame {
 public:
     frame(const std::string &title, observer *controller);
 
-    void showMemoryError(const bool &critical);
+    void showMemoryError();
 
     std::vector<wxStaticText *> &parameterTexts() {
         return parameterLabels;
@@ -88,7 +88,11 @@ private:
 
     void onTimeParameterChange(wxSpinEvent &event);
 
-    void onTimerSelection(wxCommandEvent &);
+    void onTimerSelection(wxCommandEvent &event);
+
+    void onTimerStart(wxCommandEvent &event);
+
+    void onTimerTick(wxCommandEvent &event);
 
     observer *controller;
     wxMenuBar *menuBar{};

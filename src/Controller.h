@@ -9,6 +9,10 @@ class controller : public observer {
 public:
     controller();
 
+    controller(const controller &controller1) = delete;
+
+    controller operator=(const controller &controller1) = delete;
+
     void createNewTimer() override;
 
     void deleteSelectedTimer() override;
@@ -38,6 +42,8 @@ public:
     void changeDateFormat(const std::string &newFormat) override;
 
     void changeTimerFormat(const std::string &newFormat) override;
+
+    [[nodiscard]] wxFrame *getView() const override;
 
     [[nodiscard]] const std::string &getTimerFormat() const override;
 
