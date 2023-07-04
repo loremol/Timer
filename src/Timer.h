@@ -28,6 +28,11 @@ public:
           const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &endPoint,
           observer *controller);
 
+    ~timer() {
+        requestStop();
+        while (state == Running) {}
+    }
+
     void start();
 
     void requestStop();
@@ -67,6 +72,8 @@ private:
     date startDate, endDate;
     std::atomic<bool> state;
     std::atomic<bool> stopRequested = false;
+
+    void run();
 };
 
 

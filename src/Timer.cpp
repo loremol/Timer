@@ -49,6 +49,10 @@ void timer::start() {
     if (!isRunning()) calcStartEndDates();
     state = Running;
     sendTimerStartedEvent();
+    run();
+}
+
+void timer::run() {
     auto end = endDate.getPoint();
     auto lastUpdate = time_point_cast<milliseconds>(system_clock::now());
     while (lastUpdate < end) {
