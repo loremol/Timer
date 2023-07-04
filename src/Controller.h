@@ -9,6 +9,8 @@ class controller : public observer {
 public:
     controller();
 
+    ~controller() override { saveAndClose(); };
+
     controller(const controller &controller1) = delete;
 
     controller operator=(const controller &controller1) = delete;
@@ -23,7 +25,7 @@ public:
 
     void stopSelectedTimer() override;
 
-    void eraseTimerThread(const std::thread::id &threadId) override;
+    void eraseTimerThread(const std::string &threadId) override;
 
     void closeWindow() override;
 
@@ -43,33 +45,44 @@ public:
 
     void changeTimerFormat(const std::string &newFormat) override;
 
-    [[nodiscard]] wxFrame *getView() const override;
+    [[nodiscard]] wxFrame * getView() const override;
+
+    [[nodiscard]] const std::vector<std::shared_ptr<timer>> &getTimers() const;
+
+    [[nodiscard]] const std::shared_ptr<timer> &getSelectedTimer() const;
+
+    [[nodiscard]] const std::map<int, std::thread> &getThreads() const;
 
     [[nodiscard]] const std::string &getTimerFormat() const override;
 
     [[nodiscard]] const std::string &getDateFormat() const override;
 
 private:
+    void saveAndClose();
+
     void loadTimers();
 
-    void saveTimers();
+    void saveTimers() const;
 
     void loadFormats();
 
-    void saveFormats();
+    void saveFormats() const;
 
     void updateSpinCtrlValues();
 
     void updateNameField();
 
-    static void waitForTimerStop(const std::shared_ptr<timer> &timer);
+    void updateSelectedTimer();
+
+    [[nodiscard]] std::string stringifyThreadId(const std::thread::id &threadId) const;
 
     std::vector<std::shared_ptr<timer>> timers{};
     std::map<int, std::thread> threads{};
     frame *view;
-    std::shared_ptr<timer> selectedTimer = nullptr;
+    std::shared_ptr<timer> selectedTimer{nullptr};
     std::string timerFormat{"%M:%S"};
     std::string dateFormat{"%H:%M:%S, %d %B %Y"};
+
 };
 
 

@@ -1,5 +1,4 @@
 #include "Frame.h"
-#include <filesystem>
 
 auto newIcon = std::filesystem::path{"../res/new.png"};
 auto deleteIcon = std::filesystem::path{"../res/delete.png"};
@@ -15,8 +14,9 @@ wxBEGIN_EVENT_TABLE(frame, wxFrame)
                 EVT_BUTTON(RenameButton, frame::onRename)
                 EVT_LISTBOX(ListBox, frame::onTimerSelection)
                 EVT_SPINCTRL(SpinCtrlId, frame::onTimeParameterChange)
-                EVT_COMMAND(timerEventId::OnTimerStart, wxEVT_COMMAND_TEXT_UPDATED, frame::onTimerStart)
-                EVT_COMMAND(timerEventId::OnTimerTick, wxEVT_COMMAND_TEXT_UPDATED, frame::onTimerTick)
+                EVT_COMMAND(timerEventId::TimerStarted, wxEVT_COMMAND_TEXT_UPDATED, frame::onTimerStart)
+                EVT_COMMAND(timerEventId::TimerTicked, wxEVT_COMMAND_TEXT_UPDATED, frame::onTimerTick)
+                EVT_COMMAND(timerEventId::TimerStopped, wxEVT_TEXT, frame::onTimerStop)
                 EVT_CLOSE(frame::onCloseWindow)
 wxEND_EVENT_TABLE()
 
@@ -224,4 +224,48 @@ void frame::onTimerStart(wxCommandEvent &WXUNUSED(event)) {
 void frame::onTimerTick(wxCommandEvent &WXUNUSED(event)) {
     controller->updateRemainingTime();
     controller->layoutView();
+}
+
+void frame::onTimerStop(wxCommandEvent &event) {
+    controller->eraseTimerThread(event.GetString().ToStdString());
+}
+
+wxPanel *frame::panel() const {
+    return mainPanel;
+}
+
+wxStaticText *frame::name() const {
+    return timerNameField;
+}
+
+wxListBox *frame::timerList() const {
+    return timerListBox;
+}
+
+wxStaticText *frame::remainingTime() const {
+    return remainingTimeStaticText;
+}
+
+wxStaticText *frame::startDate() const {
+    return startDateText;
+}
+
+wxStaticText *frame::endDate() const {
+    return endDateText;
+}
+
+wxBitmapButton *frame::getDeleteBitmapButton() const {
+    return deleteBitmapButton;
+}
+
+wxBitmapButton *frame::getRenameBitmapButton() const {
+    return renameBitmapButton;
+}
+
+wxButton *frame::getStartButton() const {
+    return startButton;
+}
+
+wxButton *frame::getStopButton() const {
+    return stopButton;
 }

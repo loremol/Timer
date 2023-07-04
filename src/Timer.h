@@ -14,8 +14,9 @@ enum state {
 };
 
 enum timerEventId {
-    OnTimerStart = 20000,
-    OnTimerTick
+    TimerStarted = 20000,
+    TimerTicked,
+    TimerStopped
 };
 
 class timer {
@@ -31,7 +32,7 @@ public:
 
     void requestStop();
 
-    void updateWhileRunning();
+    void sendTimerTickEvent() const;
 
     void setName(const std::string &s);
 
@@ -43,13 +44,11 @@ public:
 
     [[nodiscard]] const std::string &getName() const;
 
-    [[nodiscard]] std::string formatRemainingTime(std::string format);
+    [[nodiscard]] std::string formatRemainingTime(std::string format) const;
 
-    [[nodiscard]] date &getStartDate();
+    [[nodiscard]] date getStartDate() const;
 
-    [[nodiscard]] date &getEndDate();
-
-    [[nodiscard]] bool hasFinished() const;
+    [[nodiscard]] date getEndDate() const;
 
 private:
     void stop();
@@ -58,12 +57,15 @@ private:
 
     void checkConstructorParameters();
 
+    void sendTimerStoppedEvent() const;
+
+    void sendTimerStartedEvent() const;
+
     observer *controller;
     std::string name;
-
     std::chrono::milliseconds timerDuration{0}, remainingTime{0};
     date startDate, endDate;
-    bool state, finishedStopping{false};
+    std::atomic<bool> state;
     std::atomic<bool> stopRequested = false;
 };
 

@@ -1,7 +1,5 @@
 #include "Date.h"
 
-#include <stdexcept>
-
 std::string monthNames[12] = {"January", "February", "March", "April", "May", "June", "July", "August",
                               "September", "October", "November", "December"};
 std::string shortMonthNames[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
@@ -56,10 +54,13 @@ date::date(const int &year, const int &month, const int &day, const int &hour, c
     timeStruct.tm_sec = second;
     using namespace std::chrono;
     auto msSinceEpoch = duration_cast<milliseconds>(static_cast<seconds>(mktime(&timeStruct)));
+    if (timeStruct.tm_isdst) {
+        timeStruct.tm_hour--;
+    }
     point = time_point<system_clock, milliseconds>() + msSinceEpoch;
 }
 
-std::string date::addZeroIfNeeded(const long &value) {
+std::string date::stringifyLeadingZero(const long &value) {
     using namespace std;
     if (value >= 10) {
         return to_string(value);
@@ -73,7 +74,7 @@ std::string date::format(std::string format) const {
     using namespace std;
     auto hour = format.find("%H");
     if (hour != string::npos) {
-        format.replace(hour, 2, addZeroIfNeeded(getHour()));
+        format.replace(hour, 2, stringifyLeadingZero(getHour()));
     }
 
     auto americanHour = format.find("%I");
@@ -83,9 +84,9 @@ std::string date::format(std::string format) const {
         if (getHour() == 0)
             american = "12";
         else if (getHour() > 12)
-            american = addZeroIfNeeded(getHour() - 12);
+            american = stringifyLeadingZero(getHour() - 12);
         else
-            american = addZeroIfNeeded(getHour());
+            american = stringifyLeadingZero(getHour());
 
         format.replace(americanHour, 2, american);
     }
@@ -97,17 +98,17 @@ std::string date::format(std::string format) const {
 
     auto minute = format.find("%M");
     if (minute != string::npos) {
-        format.replace(minute, 2, addZeroIfNeeded(getMinute()));
+        format.replace(minute, 2, stringifyLeadingZero(getMinute()));
     }
 
     auto second = format.find("%S");
     if (second != string::npos) {
-        format.replace(second, 2, addZeroIfNeeded(getSecond()));
+        format.replace(second, 2, stringifyLeadingZero(getSecond()));
     }
 
     auto day = format.find("%d");
     if (day != string::npos) {
-        format.replace(day, 2, addZeroIfNeeded(getDay()));
+        format.replace(day, 2, stringifyLeadingZero(getDay()));
     }
 
     auto littleDay = format.find("%e");
@@ -119,7 +120,7 @@ std::string date::format(std::string format) const {
 
     auto month = format.find("%m");
     if (month != string::npos) {
-        format.replace(month, 2, addZeroIfNeeded(getMonth()));
+        format.replace(month, 2, stringifyLeadingZero(getMonth()));
     }
 
     auto littleMonth = format.find("%f");
@@ -160,7 +161,11 @@ std::string date::format(std::string format) const {
     return format;
 }
 
-long date::getSecondsFromEpoch() {
+const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> & date::getPoint() const {
+    return point;
+}
+
+long date::getSecondsFromEpoch() const {
     using namespace std::chrono;
     return time_point_cast<seconds>(point).time_since_epoch().count();
 }
@@ -187,11 +192,4 @@ int date::getMinute() const {
 
 int date::getSecond() const {
     return timeStruct.tm_sec;
-}
-
-using namespace std::chrono;
-
-time_point<system_clock, milliseconds>
-date::getPoint() {
-    return point;
 }

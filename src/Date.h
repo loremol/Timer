@@ -1,9 +1,12 @@
 #ifndef TIMER_DATE_H
 #define TIMER_DATE_H
 
+#include <stdexcept>
 #include <string>
 #include <memory>
 #include <chrono>
+#include <numeric>
+#include <ranges>
 
 class date {
 public:
@@ -12,7 +15,7 @@ public:
 
     explicit date(const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &timePoint);
 
-    static std::string addZeroIfNeeded(const long &value);
+    static std::string stringifyLeadingZero(const long &value);
 
     [[nodiscard]] int getYear() const;
 
@@ -26,9 +29,9 @@ public:
 
     [[nodiscard]] int getSecond() const;
 
-    [[nodiscard]] long getSecondsFromEpoch();
+    [[nodiscard]] long getSecondsFromEpoch() const;
 
-    [[nodiscard]] std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> getPoint();
+    [[nodiscard]] const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> & getPoint() const;
 
     [[nodiscard]] std::string format(std::string format) const;
 

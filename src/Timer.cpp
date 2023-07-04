@@ -48,15 +48,14 @@ void timer::calcStartEndDates() {
 void timer::start() {
     if (!isRunning()) calcStartEndDates();
     state = Running;
-    wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED, OnTimerStart);
-    controller->getView()->GetEventHandler()->AddPendingEvent(event);
+    sendTimerStartedEvent();
     auto end = endDate.getPoint();
     auto lastUpdate = time_point_cast<milliseconds>(system_clock::now());
     while (lastUpdate < end) {
         if (stopRequested) break;
         lastUpdate = time_point_cast<milliseconds>(system_clock::now());
         remainingTime = end - lastUpdate;
-        updateWhileRunning();
+        sendTimerTickEvent();
         std::this_thread::sleep_for(milliseconds(25));
     }
     stop();
@@ -64,24 +63,32 @@ void timer::start() {
 
 void timer::stop() {
     stopRequested = false;
-    state = Stopped;
     remainingTime = timerDuration;
-    if (controller != nullptr)
-        controller->eraseTimerThread(std::this_thread::get_id());
-    finishedStopping = true;
+    sendTimerStoppedEvent();
+    state = Stopped;
+}
+
+void timer::sendTimerStartedEvent() const {
+    wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED, TimerStarted);
+    controller->getView()->GetEventHandler()->AddPendingEvent(event);
+}
+
+void timer::sendTimerTickEvent() const {
+    wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED, TimerTicked);
+    controller->getView()->GetEventHandler()->AddPendingEvent(event);
+}
+
+void timer::sendTimerStoppedEvent() const {
+    wxCommandEvent event(wxEVT_TEXT, TimerStopped);
+    std::ostringstream ss;
+    ss << std::this_thread::get_id();
+    event.SetString(ss.str());
+    controller->getView()->GetEventHandler()->AddPendingEvent(event);
 }
 
 void timer::requestStop() {
     if (isRunning()) {
-        finishedStopping = false;
         stopRequested = true;
-    }
-}
-
-void timer::updateWhileRunning() {
-    if (controller != nullptr) {
-        wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED, OnTimerTick);
-        controller->getView()->GetEventHandler()->AddPendingEvent(event);
     }
 }
 
@@ -96,7 +103,7 @@ void timer::setDuration(int newDuration) {
     calcStartEndDates();
 }
 
-std::string timer::formatRemainingTime(std::string format) {
+std::string timer::formatRemainingTime(std::string format) const {
     using namespace std;
     using namespace std::chrono;
     auto remaining = remainingTime;
@@ -173,11 +180,11 @@ std::string timer::formatRemainingTime(std::string format) {
     return format;
 }
 
-date &timer::getStartDate() {
+date timer::getStartDate() const {
     return startDate;
 }
 
-date &timer::getEndDate() {
+date timer::getEndDate() const {
     return endDate;
 }
 
@@ -191,8 +198,4 @@ long timer::getDuration() const {
 
 bool timer::isRunning() const {
     return state;
-}
-
-bool timer::hasFinished() const {
-    return finishedStopping;
 }

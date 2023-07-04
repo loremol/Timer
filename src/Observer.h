@@ -1,7 +1,6 @@
 #ifndef TIMER_OBSERVER_H
 #define TIMER_OBSERVER_H
 
-#include <thread>
 
 class observer {
 public:
@@ -21,7 +20,7 @@ public:
 
     virtual void stopSelectedTimer() = 0;
 
-    virtual void eraseTimerThread(const std::thread::id &threadId) = 0;
+    virtual void eraseTimerThread(const std::string &threadId) = 0;
 
     virtual void updateSelectedTimerDuration() = 0;
 
@@ -37,7 +36,7 @@ public:
 
     virtual void changeDateFormat(const std::string &format) = 0;
 
-    [[nodiscard]] virtual wxFrame *getView() const = 0;
+    [[nodiscard]] virtual wxFrame * getView() const = 0;
 
     [[nodiscard]] virtual const std::string &getTimerFormat() const = 0;
 

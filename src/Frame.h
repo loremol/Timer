@@ -6,6 +6,7 @@
 #include <map>
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
 #include <list>
@@ -29,41 +30,34 @@ public:
 
     void showMemoryError();
 
-    std::vector<wxStaticText *> &parameterTexts() {
+    const std::vector<wxStaticText *> & parameterTexts() {
         return parameterLabels;
     }
 
-    std::vector<wxSpinCtrl *> &timeControls() {
+    const std::vector<wxSpinCtrl *> & timeControls() {
         return parameterControls;
     }
 
-    wxListBox &timerList() {
-        return *timerListBox;
-    }
+    [[nodiscard]] wxPanel *panel() const;
 
-    wxStaticText &remainingTime() {
-        return *remainingTimeStaticText;
-    }
+    [[nodiscard]] wxListBox *timerList() const;
 
-    wxStaticText &name() {
-        return *timerNameField;
-    }
+    [[nodiscard]] wxStaticText *remainingTime() const;
 
-    wxStaticText &startDate() {
-        return *startDateText;
-    }
+    [[nodiscard]] wxStaticText *name() const;
 
-    wxStaticText &endDate() {
-        return *endDateText;
-    }
+    [[nodiscard]] wxStaticText *startDate() const;
 
-    [[nodiscard]] wxPanel *panel() const {
-        return mainPanel;
-    }
+    [[nodiscard]] wxStaticText *endDate() const;
 
-    wxPanel *mainPanel{};
-    wxBitmapButton *newBitmapButton{}, *deleteBitmapButton{}, *renameBitmapButton{};
-    wxButton *startButton{}, *stopButton{};
+    [[nodiscard]] wxBitmapButton *getDeleteBitmapButton() const;
+
+    [[nodiscard]] wxBitmapButton *getRenameBitmapButton() const;
+
+    [[nodiscard]] wxButton *getStartButton() const;
+
+    [[nodiscard]] wxButton *getStopButton() const;
+
 
 private:
     void allocateUiMemory();
@@ -94,12 +88,17 @@ private:
 
     void onTimerTick(wxCommandEvent &event);
 
+    void onTimerStop(wxCommandEvent &event);
+
     observer *controller;
+    wxPanel *mainPanel{};
     wxMenuBar *menuBar{};
     wxMenu *fileMenu{}, *editMenu{};
     wxBoxSizer *columns{}, *leftColumn{}, *rightColumn{}, *timerManagementButtons{}, *timerNameSizer{}, *remainingTimeSizer{}, *parameters{}, *timerStartStop{};
     wxBoxSizer *yearsHoursParameters{}, *weeksMinutesParameters{}, *daysSecondsParameters{}, *hourPar{}, *minutePar{}, *secondPar{};
     wxListBox *timerListBox{};
+    wxBitmapButton *newBitmapButton{}, *deleteBitmapButton{}, *renameBitmapButton{};
+    wxButton *startButton{}, *stopButton{};
     wxStaticText *timerListStaticText{};
     wxStaticText *yearsLabel{}, *weeksLabel{}, *daysLabel{}, *hoursLabel{}, *minutesLabel{}, *secondsLabel{};
     wxStaticText *startDateText{}, *endDateText{};

@@ -5,7 +5,7 @@ bool app::OnInit() {
         c = std::make_shared<controller>();
         return true;
     } catch (const std::bad_alloc &e) {
-        std::cout << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
         return false;
     }
 }
