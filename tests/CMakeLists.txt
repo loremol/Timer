@@ -4,7 +4,10 @@ set(PROJECT_NAME Tests)
 project(${PROJECT_NAME})
 
 find_package(GTest REQUIRED)
+find_package(wxWidgets)
+include(${wxWidgets_USE_FILE})
 
-set(SOURCE_FILES runAllTests.cpp DateTest.cpp TimerTest.cpp)
-add_executable(runAllTests ${SOURCE_FILES})
-target_link_libraries(runAllTests ${GTEST_BOTH_LIBRARIES} core)
+
+set(SOURCE_FILES runAllTests.cpp DateTest.cpp TimerTest.cpp ControllerTest.cpp)
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+target_link_libraries(${PROJECT_NAME} core ${wxWidgets_LIBRARIES} ${GTEST_BOTH_LIBRARIES})

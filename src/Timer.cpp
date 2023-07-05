@@ -73,16 +73,19 @@ void timer::stop() {
 }
 
 void timer::sendTimerStartedEvent() const {
+    if (controller == nullptr) return;
     wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED, TimerStarted);
     controller->getView()->GetEventHandler()->AddPendingEvent(event);
 }
 
 void timer::sendTimerTickEvent() const {
+    if (controller == nullptr) return;
     wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED, TimerTicked);
     controller->getView()->GetEventHandler()->AddPendingEvent(event);
 }
 
 void timer::sendTimerStoppedEvent() const {
+    if (controller == nullptr) return;
     wxCommandEvent event(wxEVT_TEXT, TimerStopped);
     std::ostringstream ss;
     ss << std::this_thread::get_id();
