@@ -3,9 +3,9 @@
 
 
 #include "Frame.h"
-#include "Observer.h"
+#include "ControllerInterface.h"
 
-class controller : public observer {
+class controller : public controllerInterface {
 public:
     controller();
 
@@ -45,7 +45,7 @@ public:
 
     void changeTimerFormat(const std::string &newFormat) override;
 
-    [[nodiscard]] wxFrame * getView() const override;
+    [[nodiscard]] wxFrame *getView() const override;
 
     [[nodiscard]] const std::vector<std::shared_ptr<timer>> &getTimers() const;
 

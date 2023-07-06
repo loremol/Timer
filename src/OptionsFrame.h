@@ -3,7 +3,7 @@
 
 #include <string>
 #include <wx/wx.h>
-#include "Observer.h"
+#include "ControllerInterface.h"
 
 enum optionsEventId {
     TimerFormat = wxID_HIGHEST + 1000,
@@ -14,7 +14,7 @@ enum optionsEventId {
 
 class optionsFrame : public wxDialog {
 public:
-    explicit optionsFrame(const std::string &title, observer *observer);
+    explicit optionsFrame(const std::string &title, controllerInterface *observer);
 
 private:
     void allocateUiMemory();
@@ -29,7 +29,7 @@ private:
 
     void onTimerFormatInfo(wxCommandEvent &event);
 
-    observer *controller;
+    controllerInterface *controller;
     wxPanel *mainPanel{};
     wxBoxSizer *column{}, *timerFormatRow{}, *dateFormatRow{};
     wxStaticText *timerFormatPrompt{}, *dateFormatPrompt{};

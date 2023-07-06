@@ -1,9 +1,9 @@
 #include "Date.h"
 
-std::string monthNames[12] = {"January", "February", "March", "April", "May", "June", "July", "August",
-                              "September", "October", "November", "December"};
-std::string shortMonthNames[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
-                                   "Sep", "Oct", "Nov", "Dec"};
+const std::string monthNames[12] = {"January", "February", "March", "April", "May", "June", "July", "August",
+                                    "September", "October", "November", "December"};
+const std::string shortMonthNames[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+                                         "Sep", "Oct", "Nov", "Dec"};
 
 date::date(const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &timePoint) : point(
         timePoint) {
@@ -14,36 +14,36 @@ date::date(const std::chrono::time_point<std::chrono::system_clock, std::chrono:
 
 date::date(const int &year, const int &month, const int &day, const int &hour, const int &minute, const int &second) {
     if (year < 1970)
-        throw std::invalid_argument("Invalid year passed to timeStruct constructor.");
+        throw std::invalid_argument("Invalid year passed to date's ctor.");
 
     if (month < 1 || month > 12)
-        throw std::invalid_argument("Invalid month passed to timeStruct constructor.");
+        throw std::invalid_argument("Invalid month passed to date's ctor.");
 
     if (day < 1 || day > 31)
-        throw std::invalid_argument("Invalid day passed to timeStruct constructor.");
+        throw std::invalid_argument("Invalid day passed to date's ctor.");
 
     if (hour < 0 || hour > 23)
-        throw std::invalid_argument("Invalid hour passed to timeStruct constructor.");
+        throw std::invalid_argument("Invalid hour passed to date's ctor.");
 
     if (minute < 0 || minute > 59)
-        throw std::invalid_argument("Invalid minute passed to timeStruct constructor.");
+        throw std::invalid_argument("Invalid minute passed to date's ctor.");
 
     if (second < 0 || second > 59)
-        throw std::invalid_argument("Invalid second passed to timeStruct constructor.");
+        throw std::invalid_argument("Invalid second passed to date's ctor.");
 
     if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30)
         throw std::invalid_argument(
-                "Invalid timeStruct passed to timeStruct constructor. " + monthNames[month - 1] +
+                "Invalid timeStruct passed to date's ctor. " + monthNames[month - 1] +
                 " has only 30 days.");
 
     if (month == 2 && year % 4 != 0 && day > 28)
         throw std::invalid_argument(
-                "Invalid timeStruct passed to timeStruct constructor. February has only 28 days in " +
+                "Invalid timeStruct passed to date's ctor. February has only 28 days in " +
                 std::to_string(year));
 
     if (month == 2 && year % 4 == 0 && day > 29)
         throw std::invalid_argument(
-                "Invalid timeStruct passed to timeStruct constructor. February has only 29 days in " +
+                "Invalid timeStruct passed to date's ctor. February has only 29 days in " +
                 std::to_string(year));
 
     timeStruct.tm_year = year - 1900;
@@ -54,9 +54,9 @@ date::date(const int &year, const int &month, const int &day, const int &hour, c
     timeStruct.tm_sec = second;
     using namespace std::chrono;
     auto msSinceEpoch = duration_cast<milliseconds>(static_cast<seconds>(mktime(&timeStruct)));
-    if (timeStruct.tm_isdst) {
+    if (timeStruct.tm_isdst)
         timeStruct.tm_hour--;
-    }
+
     point = time_point<system_clock, milliseconds>() + msSinceEpoch;
 }
 
@@ -161,7 +161,7 @@ std::string date::format(std::string format) const {
     return format;
 }
 
-const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> & date::getPoint() const {
+const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &date::getPoint() const {
     return point;
 }
 

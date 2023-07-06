@@ -11,7 +11,7 @@
 #include <wx/spinctrl.h>
 #include <list>
 #include "Timer.h"
-#include "Observer.h"
+#include "ControllerInterface.h"
 
 enum eventId {
     MenuEditOptions = wxID_HIGHEST + 1,
@@ -26,15 +26,15 @@ enum eventId {
 
 class frame : public wxFrame {
 public:
-    frame(const std::string &title, observer *controller);
+    frame(const std::string &title, controllerInterface *controller);
 
     void showMemoryError();
 
-    const std::vector<wxStaticText *> & parameterTexts() {
+    const std::vector<wxStaticText *> &parameterTexts() {
         return parameterLabels;
     }
 
-    const std::vector<wxSpinCtrl *> & timeControls() {
+    const std::vector<wxSpinCtrl *> &timeControls() {
         return parameterControls;
     }
 
@@ -90,7 +90,7 @@ private:
 
     void onTimerStop(wxCommandEvent &event);
 
-    observer *controller;
+    controllerInterface *controller;
     wxPanel *mainPanel{};
     wxMenuBar *menuBar{};
     wxMenu *fileMenu{}, *editMenu{};

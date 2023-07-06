@@ -6,7 +6,7 @@
 #include <functional>
 #include "Date.h"
 #include "OptionsFrame.h"
-#include "Observer.h"
+#include "ControllerInterface.h"
 
 enum state {
     Stopped,
@@ -21,12 +21,12 @@ enum timerEventId {
 
 class timer {
 public:
-    timer(std::string name, int duration, observer *controller);
+    timer(std::string name, int duration, controllerInterface *controller);
 
     timer(std::string name, const bool &state,
           const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &startPoint,
           const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &endPoint,
-          observer *controller);
+          controllerInterface *controller);
 
     ~timer() {
         requestStop();
@@ -66,7 +66,7 @@ private:
 
     void sendTimerStartedEvent() const;
 
-    observer *controller;
+    controllerInterface *controller;
     std::string name;
     std::chrono::milliseconds timerDuration{0}, remainingTime{0};
     date startDate, endDate;

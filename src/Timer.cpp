@@ -6,7 +6,7 @@
 
 using namespace std::chrono;
 
-timer::timer(std::string name, int duration, observer *controller)
+timer::timer(std::string name, int duration, controllerInterface *controller)
         : name(std::move(name)), timerDuration(duration * 1000), remainingTime(timerDuration),
           state(Stopped), controller(controller) {
     checkConstructorParameters();
@@ -16,9 +16,9 @@ timer::timer(std::string name, int duration, observer *controller)
 timer::timer(std::string name, const bool &state,
              const time_point<system_clock, milliseconds> &startPoint,
              const time_point<system_clock, milliseconds> &endPoint,
-             observer *controller) : name(std::move(name)), state(state), controller(controller),
-                                     startDate(startPoint),
-                                     endDate(endPoint) {
+             controllerInterface *controller) : name(std::move(name)), state(state), controller(controller),
+                                                startDate(startPoint),
+                                                endDate(endPoint) {
     checkConstructorParameters();
     timerDuration = endDate.getPoint() - startDate.getPoint();
     if (isRunning()) {

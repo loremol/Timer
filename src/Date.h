@@ -31,7 +31,7 @@ public:
 
     [[nodiscard]] long getSecondsFromEpoch() const;
 
-    [[nodiscard]] const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> & getPoint() const;
+    [[nodiscard]] const std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> &getPoint() const;
 
     [[nodiscard]] std::string format(std::string format) const;
 

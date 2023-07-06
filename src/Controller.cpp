@@ -20,8 +20,9 @@ void controller::createNewTimer() {
                 suggestedName = "Timer " + std::to_string(timers.size() + 1);
         }
         wxString newName;
-        while(newName.empty())
-            newName = wxGetTextFromUser("Enter the new timer's name (it shouldn't be empty):", "New timer", suggestedName);
+        while (newName.empty())
+            newName = wxGetTextFromUser("Enter the new timer's name (it shouldn't be empty):", "New timer",
+                                        suggestedName);
 
         int newIndex = static_cast<int>(timers.size());
         timers.emplace_back(std::make_shared<timer>(newName.ToStdString(), 60 * 5, this));
@@ -58,7 +59,8 @@ void controller::deleteSelectedTimer() {
 void controller::renameSelectedTimer() {
     wxString newName;
     while (newName.empty())
-        newName = wxGetTextFromUser("Enter the new timer's name (it shouldn't be empty):", "Rename timer", selectedTimer->getName());
+        newName = wxGetTextFromUser("Enter the new timer's name (it shouldn't be empty):", "Rename timer",
+                                    selectedTimer->getName());
     auto it = std::find(timers.begin(), timers.end(), selectedTimer);
     int timerListBoxIndex = static_cast<int>(std::distance(timers.begin(), it));
     view->timerList()->SetString(timerListBoxIndex, newName);
@@ -343,7 +345,7 @@ const std::string &controller::getDateFormat() const {
     return dateFormat;
 }
 
-wxFrame * controller::getView() const {
+wxFrame *controller::getView() const {
     return view;
 }
 

@@ -11,8 +11,9 @@ wxBEGIN_EVENT_TABLE(optionsFrame, wxDialog)
                 EVT_BUTTON(TimerFormatInfo, optionsFrame::onTimerFormatInfo)
 wxEND_EVENT_TABLE()
 
-optionsFrame::optionsFrame(const std::string &title, observer *observer) : wxDialog(nullptr, wxID_ANY, title),
-                                                                           controller(observer) {
+optionsFrame::optionsFrame(const std::string &title, controllerInterface *observer) : wxDialog(nullptr, wxID_ANY,
+                                                                                               title),
+                                                                                      controller(observer) {
     allocateUiMemory();
     setupUi();
 }

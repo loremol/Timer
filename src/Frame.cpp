@@ -20,9 +20,10 @@ wxBEGIN_EVENT_TABLE(frame, wxFrame)
                 EVT_CLOSE(frame::onCloseWindow)
 wxEND_EVENT_TABLE()
 
-frame::frame(const std::string &title, observer *controller) : wxFrame(nullptr, wxID_ANY, title),
-                                                               mainPanel(new wxPanel(this, wxID_ANY, wxPoint(0, 0))),
-                                                               controller(controller) {
+frame::frame(const std::string &title, controllerInterface *controller) : wxFrame(nullptr, wxID_ANY, title),
+                                                                          mainPanel(new wxPanel(this, wxID_ANY,
+                                                                                                wxPoint(0, 0))),
+                                                                          controller(controller) {
     allocateUiMemory();
     setupUi();
 }

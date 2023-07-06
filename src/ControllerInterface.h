@@ -1,10 +1,10 @@
-#ifndef TIMER_OBSERVER_H
-#define TIMER_OBSERVER_H
+#ifndef TIMER_CONTROLLERINTERFACE_H
+#define TIMER_CONTROLLERINTERFACE_H
 
 
-class observer {
+class controllerInterface {
 public:
-    virtual ~observer() = default;
+    virtual ~controllerInterface() = default;
 
     virtual void updateTimerView() = 0;
 
@@ -36,7 +36,7 @@ public:
 
     virtual void changeDateFormat(const std::string &format) = 0;
 
-    [[nodiscard]] virtual wxFrame * getView() const = 0;
+    [[nodiscard]] virtual wxFrame *getView() const = 0;
 
     [[nodiscard]] virtual const std::string &getTimerFormat() const = 0;
 
@@ -44,4 +44,4 @@ public:
 
 };
 
-#endif //TIMER_OBSERVER_H
+#endif //TIMER_CONTROLLERINTERFACE_H
