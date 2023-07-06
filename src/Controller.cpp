@@ -96,7 +96,7 @@ void controller::stopSelectedTimer() {
 
 void controller::eraseTimerThread(const std::string &threadId) {
     auto threadToDelete = std::find_if(threads.begin(), threads.end(),
-                                       [&threadId, this](const std::pair<const int, std::thread> &t) -> bool {
+                                       [&threadId](const std::pair<const int, std::thread> &t) -> bool {
                                            return stringifyThreadId(t.second.get_id()) == threadId;
                                        });
     if (threadToDelete != threads.end() && threadToDelete->second.joinable()) {
