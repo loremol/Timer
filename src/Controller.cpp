@@ -105,7 +105,7 @@ void controller::eraseTimerThread(const std::string &threadId) {
     }
 }
 
-std::string controller::stringifyThreadId(const std::thread::id &threadId) const {
+std::string controller::stringifyThreadId(const std::thread::id &threadId) {
     std::ostringstream ss;
     ss << threadId;
     return ss.str();

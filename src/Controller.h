@@ -74,7 +74,7 @@ private:
 
     void updateSelectedTimer();
 
-    [[nodiscard]] std::string stringifyThreadId(const std::thread::id &threadId) const;
+    [[nodiscard]] static std::string stringifyThreadId(const std::thread::id &threadId);
 
     std::vector<std::shared_ptr<timer>> timers{};
     std::map<int, std::thread> threads{};
