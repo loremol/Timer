@@ -4,9 +4,9 @@
 
 std::filesystem::path infoIcon{"../res/info.png"};
 const std::string dateFormatInformation{
-        "%d = dd\n%e = d\n%f = m\n%m = mm\n%b = Mth\n%B = Month\n%Y = yyyy\n%y = yy\n%H = hh\n%I = hh (AM/PM)\n%p = AM/PM\n%M = mm\n%S = ss"};
+        "%d = Day\n%e = Short day\n%m = Month\n%f = Short month\n%B = Literal month\n%b = Short literal month\n%Y = Year\n%y = Short year\n%H = Hour\n%I = Hour (AM/PM)\n%p = AM/PM\n%M = Minute\n%S = Second"};
 const std::string timerFormatInformation{
-        "%y = years\n%m = months\n%w = weeks\n%d = days\n%H = hours\n%M = minutes\n%S = seconds"};
+        "%y = Year\n%m = Month\n%w = Week\n%d = Day\n%H = Hour\n%M = Minute\n%S = Second"};
 
 wxBEGIN_EVENT_TABLE(optionsFrame, wxDialog)
                 EVT_TEXT(TimerFormat, optionsFrame::onTimerFormatChange)
