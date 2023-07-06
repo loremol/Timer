@@ -14,7 +14,7 @@ enum optionsEventId {
 
 class optionsFrame : public wxDialog {
 public:
-    explicit optionsFrame(const std::string &title, controllerInterface *observer);
+    optionsFrame(const std::string &title, controllerInterface *observer);
 
 private:
     void allocateUiMemory();
@@ -28,6 +28,8 @@ private:
     void onDateFormatInfo(wxCommandEvent &event);
 
     void onTimerFormatInfo(wxCommandEvent &event);
+
+    static void showFormatInfoDialog(const std::string &information);
 
     controllerInterface *controller;
     wxPanel *mainPanel{};

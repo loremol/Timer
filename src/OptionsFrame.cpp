@@ -2,7 +2,11 @@
 #include "FormatInfoDialog.h"
 #include <filesystem>
 
-auto infoIcon = std::filesystem::path{"../res/info.png"};
+std::filesystem::path infoIcon{"../res/info.png"};
+const std::string dateFormatInformation{
+        "%d = dd\n%e = d\n%f = m\n%m = mm\n%b = Mth\n%B = Month\n%Y = yyyy\n%y = yy\n%H = hh\n%I = hh (AM/PM)\n%p = AM/PM\n%M = mm\n%S = ss"};
+const std::string timerFormatInformation{
+        "%y = years\n%m = months\n%w = weeks\n%d = days\n%H = hours\n%M = minutes\n%S = seconds"};
 
 wxBEGIN_EVENT_TABLE(optionsFrame, wxDialog)
                 EVT_TEXT(TimerFormat, optionsFrame::onTimerFormatChange)
@@ -33,7 +37,7 @@ void optionsFrame::allocateUiMemory() {
         timerFormatInfo = new wxBitmapButton(mainPanel, TimerFormatInfo, bit, wxDefaultPosition, wxDefaultSize);
     } catch (const std::bad_alloc &e) {
         std::cerr << e.what() << std::endl;
-        this->Destroy();
+        Destroy();
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
     }
@@ -73,26 +77,19 @@ void optionsFrame::onDateFormatChange(wxCommandEvent &WXUNUSED(event)) {
 }
 
 void optionsFrame::onDateFormatInfo(wxCommandEvent &WXUNUSED(event)) {
-    auto *formatInfo = new formatInfoDialog("Formats info",
-                                            "%d = dd\n%e = d\n%f = m\n%m = mm\n%b = Mth\n%B = Month\n%Y = yyyy\n%y = yy\n%H = hh\n%I = hh (AM/PM)\n%p = AM/PM\n%M = mm\n%S = ss");
-    int width = 175, height = 300;
-    formatInfo->SetClientSize(width, height);
-    formatInfo->SetMinClientSize(wxSize(width, height));
-    formatInfo->SetMaxClientSize(wxSize(width, height));
-    formatInfo->Center();
-    formatInfo->ShowModal();
-    formatInfo->Destroy();
-
+    showFormatInfoDialog(dateFormatInformation);
 }
 
 void optionsFrame::onTimerFormatInfo(wxCommandEvent &WXUNUSED(event)) {
-    auto *formatInfo = new formatInfoDialog("Formats info",
-                                            "%y = years\n%m = months\n%w = weeks\n%d = days\n%H = hours\n%M = minutes\n%S = seconds");
+    showFormatInfoDialog(timerFormatInformation);
+}
+
+void optionsFrame::showFormatInfoDialog(const std::string &information) {
+    formatInfoDialog formatInfo("Formats info", information);
     int width = 175, height = 300;
-    formatInfo->SetClientSize(width, height);
-    formatInfo->SetMinClientSize(wxSize(width, height));
-    formatInfo->SetMaxClientSize(wxSize(width, height));
-    formatInfo->Center();
-    formatInfo->ShowModal();
-    formatInfo->Destroy();
+    formatInfo.SetClientSize(width, height);
+    formatInfo.SetMinClientSize(wxSize(width, height));
+    formatInfo.SetMaxClientSize(wxSize(width, height));
+    formatInfo.Center();
+    formatInfo.ShowModal();
 }
