@@ -43,7 +43,7 @@ public:
 
     void setDuration(int newDuration);
 
-    [[nodiscard]] bool isRunning() const;
+    [[nodiscard]] const std::atomic<bool> & isRunning() const;
 
     [[nodiscard]] long getDuration() const;
 
@@ -51,9 +51,9 @@ public:
 
     [[nodiscard]] std::string formatRemainingTime(std::string format) const;
 
-    [[nodiscard]] date getStartDate() const;
+    [[nodiscard]] const date &getStartDate() const;
 
-    [[nodiscard]] date getEndDate() const;
+    [[nodiscard]] const date &getEndDate() const;
 
 private:
     void stop();

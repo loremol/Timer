@@ -187,11 +187,11 @@ std::string timer::formatRemainingTime(std::string format) const {
     return format;
 }
 
-date timer::getStartDate() const {
+const date &timer::getStartDate() const {
     return startDate;
 }
 
-date timer::getEndDate() const {
+const date &timer::getEndDate() const {
     return endDate;
 }
 
@@ -200,9 +200,9 @@ const std::string &timer::getName() const {
 }
 
 long timer::getDuration() const {
-    return static_cast<int>(duration_cast<seconds>(timerDuration).count());
+    return static_cast<long>(duration_cast<seconds>(timerDuration).count());
 }
 
-bool timer::isRunning() const {
+const std::atomic<bool> &timer::isRunning() const {
     return state;
 }
