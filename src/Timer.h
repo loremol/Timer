@@ -43,7 +43,7 @@ public:
 
     void setDuration(int newDuration);
 
-    [[nodiscard]] const std::atomic<bool> & isRunning() const;
+    [[nodiscard]] const bool &isRunning() const;
 
     [[nodiscard]] long getDuration() const;
 
@@ -56,6 +56,8 @@ public:
     [[nodiscard]] const date &getEndDate() const;
 
 private:
+    void run();
+
     void stop();
 
     void calcStartEndDates();
@@ -70,10 +72,8 @@ private:
     std::string name;
     std::chrono::milliseconds timerDuration{0}, remainingTime{0};
     date startDate, endDate;
-    std::atomic<bool> state;
-    std::atomic<bool> stopRequested = false;
-
-    void run();
+    bool state;
+    bool stopRequested = false;
 };
 
 

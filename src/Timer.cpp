@@ -203,6 +203,6 @@ long timer::getDuration() const {
     return static_cast<long>(duration_cast<seconds>(timerDuration).count());
 }
 
-const std::atomic<bool> &timer::isRunning() const {
+const bool &timer::isRunning() const {
     return state;
 }
