@@ -51,11 +51,11 @@ void frame::allocateUiMemory() {
         timerListStaticText = new wxStaticText(mainPanel, wxID_ANY, wxString("Saved Timers"));
         timerListBox = new wxListBox(mainPanel, ListBox, wxDefaultPosition, wxSize(200, 300), savedTimers);
         newBitmapButton = new wxBitmapButton(mainPanel, wxID_NEW,
-                                             wxBitmapBundle(wxIcon(newIcon.make_preferred().string())));
+                                             wxBitmap(wxIcon(newIcon.make_preferred().string())));
         deleteBitmapButton = new wxBitmapButton(mainPanel, DeleteButton,
-                                                wxBitmapBundle(wxIcon(deleteIcon.make_preferred().string())));
+                                                wxBitmap(wxIcon(deleteIcon.make_preferred().string())));
         renameBitmapButton = new wxBitmapButton(mainPanel, RenameButton,
-                                                wxBitmapBundle(wxIcon(editIcon.make_preferred().string())));
+                                                wxBitmap(wxIcon(editIcon.make_preferred().string())));
 
         timerNameField = new wxStaticText(mainPanel, NameField, "");
 
