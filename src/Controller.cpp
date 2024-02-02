@@ -103,6 +103,8 @@ void controller::eraseTimerThread(const std::string &threadId) {
         threadToDelete->second.join();
         threads.erase(threadToDelete);
     }
+    updateRemainingTime();
+    updateControls();
 }
 
 std::string controller::stringifyThreadId(const std::thread::id &threadId) {
@@ -258,9 +260,9 @@ void controller::updateTimerDates() {
         view->startDate()->SetLabel(wxString(""));
         view->endDate()->SetLabel(wxString(""));
     } else {
-        view->startDate()->SetLabel(wxString("Timer started: " + selectedTimer->getStartDate().format(
+        view->startDate()->SetLabel(wxString("Timer start date: " + selectedTimer->getStartDate().format(
                 dateFormat)));
-        view->endDate()->SetLabel(wxString("Timer will stop: " + selectedTimer->getEndDate().format(
+        view->endDate()->SetLabel(wxString("Timer stop date: " + selectedTimer->getEndDate().format(
                 dateFormat)));
     }
 }
