@@ -2,6 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <sstream>
 #include "Timer.h"
 
 using namespace std::chrono;
