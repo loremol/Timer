@@ -1,12 +1,8 @@
 #ifndef TIMER_DATE_H
 #define TIMER_DATE_H
 
-#include <stdexcept>
 #include <string>
-#include <memory>
 #include <chrono>
-#include <numeric>
-#include <ranges>
 
 class date {
 public:

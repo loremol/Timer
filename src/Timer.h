@@ -2,10 +2,7 @@
 #define TIMER_TIMER_H
 
 #include <string>
-#include <atomic>
-#include <functional>
 #include "Date.h"
-#include "OptionsFrame.h"
 #include "ControllerInterface.h"
 
 enum state {

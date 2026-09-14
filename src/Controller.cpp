@@ -1,4 +1,7 @@
 #include "Controller.h"
+#include <numeric>
+#include <ranges>
+#include <fstream>
 
 float secondsQuantities[6] = {31536000.f, 604800.f, 86400.f, 3600.f, 60.f, 1.f};
 

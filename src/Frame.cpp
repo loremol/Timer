@@ -1,4 +1,7 @@
 #include "Frame.h"
+#include "OptionsFrame.h"
+#include "Timer.h"
+#include <filesystem>
 
 auto newIcon = std::filesystem::path{"../res/new.png"};
 auto deleteIcon = std::filesystem::path{"../res/delete.png"};

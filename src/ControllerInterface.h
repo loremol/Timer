@@ -1,6 +1,8 @@
 #ifndef TIMER_CONTROLLERINTERFACE_H
 #define TIMER_CONTROLLERINTERFACE_H
 
+#include <string>
+#include <wx/frame.h>
 
 class controllerInterface {
 public:

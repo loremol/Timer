@@ -2,15 +2,8 @@
 #define TIMER_FRAME_H
 
 #include <vector>
-#include <thread>
-#include <map>
-#include <fstream>
-#include <sstream>
-#include <filesystem>
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
-#include <list>
-#include "Timer.h"
 #include "ControllerInterface.h"
 
 enum eventId {

@@ -4,6 +4,9 @@
 
 #include "Frame.h"
 #include "ControllerInterface.h"
+#include "Timer.h"
+#include <map>
+#include <thread>
 
 class controller : public controllerInterface {
 public:
